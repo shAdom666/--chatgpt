@@ -8,11 +8,12 @@ const start=performance.now();
 const controller=new PetMotions.Controller();let lastParameterTime=performance.now(),currentPose={params:{},close:0,lift:0,offsetX:0,skirt:0},locomotion={speed:0,distance:0},actionToken=0;
 let testing=false,showcase=false,testStarted=0,testDistance=0,previewModeAge=0;const capturedModes=new Set(),captureStats={},bodyMotion={},bodyBaselines={};
 let previewRecorder,previewStream,previewChunks=[];
+let sideviews,postures,postureDiagnostics={ready:false},sideDiagnostics={ready:false,loaded:[]},lastSideFrame=performance.now();
 async function finishPreview(){if(!previewRecorder)return 0;await new Promise(resolve=>{previewRecorder.onstop=resolve;previewRecorder.stop();});previewStream.getTracks().forEach(t=>t.stop());return window.pet.previewVideo(await new Blob(previewChunks,{type:'video/webm'}).arrayBuffer());}
-window.pet.onState(state=>{if(testing)return;if(state.mode!==mode||actionToken!==state.token){modeStarted=performance.now()/1000;mode=state.mode;actionToken=state.token;}direction=state.direction;if(mode!=='walk')locomotion.speed=0;});
+window.pet.onState(state=>{if(testing)return;if(state.mode!==mode||actionToken!==state.token){modeStarted=performance.now()/1000;mode=state.mode;actionToken=state.token;}direction=state.direction;});
 window.pet.onGaze(value=>{if(testing)return;gaze=value;locomotion={speed:value.speed||0,distance:value.distance||0};});
 function range(name,value){const r=ranges[name]||(ranges[name]=[value,value]);r[0]=Math.min(r[0],value);r[1]=Math.max(r[1],value);}
-function fit(){if(!model)return;model.scale.set(1);const b=model.getLocalBounds();const size=Math.min((innerWidth-16)/b.width,(innerHeight-45)/b.height);model.scale.set(size);model.anchor.set(.5,1);model.position.set(innerWidth/2,innerHeight-9);}
+function fit(){if(!model)return;const size=Math.min((innerWidth-16)/1024,(innerHeight-28)/1359);model.anchor.set(0,0);model.pivot.set(512,1419);model.scale.set(size);model.position.set(innerWidth/2,innerHeight-9);if(sideviews)sideviews.fit();if(postures)postures.fit();}
 function set(id,value){model.internalModel.coreModel.setParameterValueById(id,value);range(id,value);}
 function renderDiagnostics(){
  const core=model.internalModel.coreModel,b=model.getBounds();
@@ -27,6 +28,8 @@ function renderDiagnostics(){
   testing=await window.pet.validation();showcase=await window.pet.showcase();controller.seed=testing?.37:Math.random();testStarted=performance.now();
   if(testing){previewStream=app.view.captureStream(60);previewRecorder=new MediaRecorder(previewStream,{mimeType:MediaRecorder.isTypeSupported('video/webm;codecs=vp9')?'video/webm;codecs=vp9':'video/webm',videoBitsPerSecond:showcase?1200000:2000000});previewRecorder.ondataavailable=e=>{if(e.data.size)previewChunks.push(e.data);};previewRecorder.start();}
   app.stage.addChild(model);fit();window.addEventListener('resize',fit);
+  if(!testing){sideviews=new SideViews(app,model);try{sideDiagnostics=await sideviews.load();}catch(error){sideDiagnostics={ready:false,loaded:[],reason:'侧身模型加载失败：'+error.message};}if(!sideDiagnostics.ready){statusNode.textContent=sideDiagnostics.reason;setTimeout(()=>statusNode.hidden=true,10000);}}
+  if(!testing){postures=new PetPostures.Views(app,model,sideviews);try{postureDiagnostics=await postures.load();}catch(error){postureDiagnostics={ready:false,reason:error.message};}if(!postureDiagnostics.ready){statusNode.textContent='姿势模型加载失败：'+postureDiagnostics.reason;statusNode.classList.add('error');}}
   // Our clock drives breathing and head motion; avoid adding the SDK demo sway twice.
   model.internalModel.breath.setParameters([]);
   const plan=showcase?PetMotions.showcase.map(id=>({id,duration:PetMotions.catalog[id].duration})):['idle','walk','wave','happy','sleep'].map(id=>({id,duration:2.2}));
@@ -58,6 +61,7 @@ function renderDiagnostics(){
    for(const id of ['ParamHairFront','ParamHairBack','ParamSkirt'])range(id,core.getParameterValueById(id));
   });
   app.ticker.add(()=>{
+   const nowSide=performance.now(),viewDt=(nowSide-lastSideFrame)/1000;if(sideviews?.ready)sideviews.update(viewDt,locomotion,gaze.heading||0);else model.alpha=1;if(postures)postures.update(viewDt,{mode,speed:locomotion.speed,heading:gaze.heading||0});lastSideFrame=nowSide;
    const ratio=innerWidth/320;model.position.set(innerWidth/2+currentPose.offsetX*ratio,innerHeight-9-currentPose.lift*ratio);
    frameCount++;
    if(testing&&frameCount%8===0){
@@ -73,8 +77,8 @@ function renderDiagnostics(){
    if(testing&&!capturedModes.has(mode)&&previewModeAge>(showcase?PetMotions.catalog[mode].previewAt:1.65)){capturedModes.add(mode);captureStats[mode]=renderDiagnostics().visiblePixels;window.pet.capture(mode,app.renderer.extract.canvas().toDataURL('image/png'));}
    if(!reported&&performance.now()-(testing?testStarted:start)>(testing?testDuration*1000:9000)){reported=true;const core=model.internalModel.coreModel,different=vertexSamples.some(v=>v.some((x,i)=>Math.abs(x-(vertexSamples[0]?.[i]||0))>.000001)),render=renderDiagnostics();const videoBytes=await finishPreview();window.pet.ready({ok:true,engine:'Live2D Cubism Core',drawableCount:core.getDrawableCount(),parameterCount:core.getParameterCount(),physicsLoaded:!!model.internalModel.physics,vertexMotionVerified:different,frames:frameCount,seconds:(performance.now()-(testing?testStarted:start))/1000,parameterRanges:ranges,render,captureStats,bodyMotion,videoBytes,controller:'quintic-keyposes-and-joint-springs'});}
   });
-  statusNode.textContent='点我聊天 · 右键动作菜单';setTimeout(()=>statusNode.hidden=true,6000);
-  window.pet.ready({ok:true,engine:'Live2D Cubism Core',loaded:true,physicsLoaded:!!model.internalModel.physics,drawableCount:model.internalModel.coreModel.getDrawableCount()});
+  if(testing||(sideDiagnostics.ready&&postureDiagnostics.ready)){statusNode.textContent='点我聊天 · 右键动作菜单';setTimeout(()=>statusNode.hidden=true,6000);}
+  window.pet.ready({ok:true,engine:'Live2D Cubism Core',loaded:true,sideviews:sideDiagnostics,postures:postureDiagnostics,physicsLoaded:!!model.internalModel.physics,drawableCount:model.internalModel.coreModel.getDrawableCount()});
  }catch(error){statusNode.classList.add('error');statusNode.textContent='Live2D 加载失败：'+error.message;window.pet.ready({ok:false,error:error.message});}
 })();
 app.view.addEventListener('pointerdown',event=>{if(event.button!==0)return;clicking=true;app.view.setPointerCapture(event.pointerId);window.pet.dragStart();});
@@ -82,4 +86,4 @@ app.view.addEventListener('pointerup',async event=>{if(event.button!==0||!clicki
 function cancelDrag(){if(clicking){clicking=false;window.pet.dragCancel();}}
 app.view.addEventListener('pointercancel',cancelDrag);app.view.addEventListener('lostpointercapture',cancelDrag);window.addEventListener('blur',cancelDrag);
 app.view.addEventListener('contextmenu',event=>{event.preventDefault();window.pet.action('menu');});
-document.addEventListener('pointermove',event=>{if(clicking||!model)return;const b=model.getBounds();const inside=event.clientX>=b.x&&event.clientX<=b.x+b.width&&event.clientY>=b.y&&event.clientY<=b.y+b.height;window.pet.clickThrough(!inside);});
+document.addEventListener('pointermove',event=>{if(clicking||!model)return;const b=postures?.bounds()||(sideviews?.ready?sideviews.bounds():model.getBounds());const inside=event.clientX>=b.x&&event.clientX<=b.x+b.width&&event.clientY>=b.y&&event.clientY<=b.y+b.height;window.pet.clickThrough(!inside);});

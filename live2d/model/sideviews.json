@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "canvas": [
+    1024,
+    1536
+  ],
+  "cycleDistance": 27.77217741935484,
+  "views": {
+    "right": {
+      "model": "sideviews/GPTDragon-side-right.model3.json",
+      "soles": 1400,
+      "headTop": 58,
+      "anchor": [
+        512,
+        1400
+      ],
+      "parameters": [
+        "ParamTail",
+        "ParamWing",
+        "ParamStrideFar",
+        "ParamStrideNear",
+        "ParamArmFar",
+        "ParamBodySway",
+        "ParamArmNear"
+      ],
+      "meshCount": 7
+    },
+    "left": {
+      "model": "sideviews/GPTDragon-side-left.model3.json",
+      "soles": 1400,
+      "headTop": 58,
+      "anchor": [
+        512,
+        1400
+      ],
+      "parameters": [
+        "ParamTail",
+        "ParamWing",
+        "ParamStrideFar",
+        "ParamStrideNear",
+        "ParamArmFar",
+        "ParamBodySway",
+        "ParamArmNear"
+      ],
+      "meshCount": 7
+    }
+  },
+  "authoring": "Exported by official Cubism Editor 5.3.04; canonical CMO3 files include repaired image resources."
+}

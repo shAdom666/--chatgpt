@@ -1,9 +1,11 @@
 {
   "name": "gpt-dragon-live2d",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "private": true,
   "main": "main.cjs",
-  "scripts": {"start": "electron ."},
+  "scripts": {
+    "start": "electron ."
+  },
   "dependencies": {
     "electron": "^45.3.0",
     "pixi-live2d-display": "^0.4.0",

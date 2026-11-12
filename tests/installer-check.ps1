@@ -1,4 +1,4 @@
-﻿param([string]$InstallerPath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-Setup-1.0.0-x64.exe'))
+﻿param([string]$InstallerPath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-Setup-1.05-x64.exe'))
 $ErrorActionPreference='Stop'
 $projectRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $installer=(Resolve-Path -LiteralPath $InstallerPath).Path

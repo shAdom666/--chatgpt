@@ -1,0 +1,67 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#f1eef5;overflow:hidden}canvas{display:block}</style><body>
+<script src="../live2d/runtime/vendor/live2dcubismcore.min.js"></script>
+<script src="../live2d/runtime/node_modules/pixi.js/dist/browser/pixi.min.js"></script>
+<script src="../live2d/runtime/node_modules/pixi-live2d-display/dist/cubism4.min.js"></script>
+<script src="../live2d/runtime/side-motion.js"></script>
+<script src="../live2d/runtime/sideviews.js"></script>
+<script src="../live2d/runtime/walker.cjs"></script>
+<script>
+(async()=>{
+ try{
+  window.PIXI=PIXI;
+  const app=new PIXI.Application({width:640,height:940,backgroundAlpha:0,antialias:true,preserveDrawingBuffer:true});document.body.appendChild(app.view);
+  const results={};
+  for(const side of ['left','right']){
+   const m=await PIXI.live2d.Live2DModel.from('../live2d/model/sideviews/GPTDragon-side-'+side+'.model3.json',{autoInteract:false,autoUpdate:true});
+   app.stage.addChild(m);m.pivot.set(512,1400);m.scale.set(850/1342);m.position.set(320,920);
+   const ctrl=new SideMotion.Controller(),core=m.internalModel.coreModel,ppu=core.getModel().canvasinfo.PixelsPerUnit;
+   let time=0,frames=0,maxLegMotion=0;const baselines={},sizes=[];
+   const update=()=>{
+    const params=ctrl.update(1/60,{speed:28,distance:time*28});time+=1/60;
+    for(const [id,v] of Object.entries(params))core.setParameterValueById(id,v);
+   };
+   m.internalModel.on('beforeModelUpdate',update);
+   await new Promise(resolve=>{
+    const tick=()=>{
+     frames++;
+     for(const i of [2,3]){
+      const v=core.getDrawableVertices(i);if(!baselines[i])baselines[i]=Float32Array.from(v);
+      for(let k=0;k<v.length;k+=2)maxLegMotion=Math.max(maxLegMotion,Math.hypot(v[k]-baselines[i][k],v[k+1]-baselines[i][k+1])*ppu);
+     }
+     const b=m.getBounds();sizes.push([b.x,b.y,b.width,b.height]);
+     if(frames>=150){app.ticker.remove(tick);resolve();}
+    };app.ticker.add(tick);
+   });
+   app.renderer.render(app.stage);
+   const pixels=app.renderer.extract.pixels();let visiblePixels=0,x0=640,y0=940,x1=0,y1=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>10){visiblePixels++;const p=(i-3)/4,x=p%640,y=Math.floor(p/640);x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
+   await window.sideTest.capture({side,png:app.view.toDataURL('image/png')});
+   results[side]={frames,drawableCount:core.getDrawableCount(),parameterCount:core.getParameterCount(),maxLegMotion,visiblePixels,visibleBounds:[x0,y0,x1,y1],bounds:sizes.at(-1),localBounds:m.getLocalBounds()};
+   m.internalModel.off('beforeModelUpdate',update);app.stage.removeChild(m);m.destroy();
+  }
+  app.renderer.resize(960,640);
+  const front=await PIXI.live2d.Live2DModel.from('../live2d/model/GPTDragon.model3.json',{autoInteract:false,autoUpdate:true});app.stage.addChild(front);
+  front.anchor.set(0,0);front.pivot.set(512,1419);front.scale.set((640-28)/1359);front.position.set(480,631);
+  window.pet={modelBundle:async()=>({views:['left','right'].map(id=>({id,url:new URL('../live2d/model/sideviews/GPTDragon-side-'+id+'.model3.json',location.href).href,turnUrl:new URL('../live2d/model/sideviews/turn-'+id+'.png',location.href).href}))})};
+  const views=new SideViews(app,front),loaded=await views.load();
+  const stream=app.view.captureStream(60),recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:1800000}),chunks=[];
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};recorder.start();
+  let state={x:180,v:0,vRate:0,direction:-1,turns:0,heading:0},distance=0,n=0;const occupancy={front:0,quarter:0,side:0},ratio=front.scale.x/(304/1024);
+  await new Promise(resolve=>{
+   const tick=()=>{
+    const seconds=n/60;if(n===300)state.direction=1;
+    const walking=seconds<3.5||(seconds>=5&&seconds<8.5),previous=state.x;
+    state=PetWalker.advance(state,1/60,walking?state.direction*28*ratio:0,0,360,true);distance+=Math.abs(state.x-previous);
+    app.stage.position.x=state.x-180;views.update(1/60,{speed:Math.abs(state.v)/ratio,distance:distance/ratio},state.heading);
+    if(front.alpha>.8)occupancy.front++;
+    if(Object.values(views.turns).some(m=>m.alpha>.8))occupancy.quarter++;
+    if(Object.values(views.models).some(m=>m.alpha>.8))occupancy.side++;
+    if(++n>=600){app.ticker.remove(tick);resolve();}
+   };app.ticker.add(tick);
+  });
+  await new Promise(resolve=>{recorder.onstop=resolve;recorder.stop();});stream.getTracks().forEach(t=>t.stop());
+  const videoBytes=await window.sideTest.video(await new Blob(chunks,{type:'video/webm'}).arrayBuffer());
+  const ok=Object.values(results).every(r=>r.drawableCount===7&&r.parameterCount===8&&r.maxLegMotion>20&&r.visiblePixels>50000&&r.visibleBounds[0]>4&&r.visibleBounds[1]>4&&r.visibleBounds[2]<636&&r.visibleBounds[3]<936)&&loaded.ready&&occupancy.front>20&&occupancy.quarter>5&&occupancy.side>100&&videoBytes>100000;
+  await window.sideTest.result({ok,results,integration:{loaded,occupancy,videoBytes,frames:n}});
+ }catch(e){await window.sideTest.result({ok:false,error:e.stack});}
+})();
+</script>

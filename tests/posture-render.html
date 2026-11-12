@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#f1eef5;overflow:hidden}canvas{display:block}</style><body>
+<script src="../live2d/runtime/vendor/live2dcubismcore.min.js"></script><script src="../live2d/runtime/node_modules/pixi.js/dist/browser/pixi.min.js"></script><script src="../live2d/runtime/node_modules/pixi-live2d-display/dist/cubism4.min.js"></script><script src="../live2d/runtime/postures.js"></script>
+<script>
+(async()=>{try{
+ window.PIXI=PIXI;const app=new PIXI.Application({width:640,height:940,backgroundAlpha:0,antialias:true,preserveDrawingBuffer:true});document.body.appendChild(app.view);
+ const front=await PIXI.live2d.Live2DModel.from('../live2d/model/GPTDragon.model3.json',{autoInteract:false,autoUpdate:true});app.stage.addChild(front);front.pivot.set(512,1419);front.scale.set(600/1024);front.position.set(320,920);
+ const metadata=await (await fetch('../live2d/model/postures/bounds.json')).json();window.pet={modelBundle:async()=>({postures:{url:new URL('../live2d/model/postures/GPTDragon-postures.model3.json',location.href).href,bounds:metadata}})};
+ const views=new PetPostures.Views(app,front,null),loaded=await views.load();views.model.position.y=920;
+ const core=views.model.internalModel.coreModel,ppu=core.getModel().canvasinfo.PixelsPerUnit,results={};
+ for(let i=0;i<5;i++){
+  views.controller.position=i+1;views.update(0,{mode:i===1?'crouch':'sleep'});front.alpha=0;
+  await new Promise(resolve=>setTimeout(resolve,80));app.renderer.render(app.stage);
+  const pixels=app.renderer.extract.pixels();let visible=0;for(let k=3;k<pixels.length;k+=4)if(pixels[k]>10)visible++;
+  const opacities=Array.from({length:5},(_,k)=>core.getDrawableOpacity(k));
+  await window.poseTest.capture({name:metadata.poses[i].id,png:app.view.toDataURL('image/png')});results[metadata.poses[i].id]={visible,opacities};
+ }
+ let minY=Infinity,maxY=-Infinity;views.controller.position=5;let t=0;
+ const sample=()=>{views.update(1/60,{mode:'sleep'});front.alpha=0;t++;const v=core.getDrawableVertices(4);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);};
+ await new Promise(resolve=>{const tick=()=>{sample();if(t>=180){app.ticker.remove(tick);resolve();}};app.ticker.add(tick);});
+ const breathMotion=(maxY-minY)*ppu;
+ views.controller=new PetPostures.Controller();
+ const stream=app.view.captureStream(60),recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:1800000}),chunks=[];recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};recorder.start();
+ let n=0,minimumSleepHitY=0;const visits=new Set();
+ await new Promise(resolve=>{const tick=()=>{const s=n/60,mode=s<4?'crouch':s<10?'sleep':s<15?'wake':s<18?'crouch':'idle';front.alpha=1;views.update(1/60,{mode});visits.add(Math.round(views.frame.progress));if(s>8&&s<10)minimumSleepHitY=views.bounds().y;if(n===895)window.poseTest.capture({name:'standing',png:app.view.toDataURL('image/png')});if(++n>=1260){app.ticker.remove(tick);resolve();}};app.ticker.add(tick);});
+ await new Promise(resolve=>{recorder.onstop=resolve;recorder.stop();});stream.getTracks().forEach(t=>t.stop());const videoBytes=await window.poseTest.video(await new Blob(chunks,{type:'video/webm'}).arrayBuffer());
+ const ok=loaded.ready&&core.getDrawableCount()===5&&core.getParameterCount()===3&&Object.values(results).every((r,i)=>r.visible>50000&&r.opacities.every((v,k)=>Math.abs(v-(i===k?1:0))<.01))&&breathMotion>.5&&visits.size===6&&views.frame.progress===0&&minimumSleepHitY>500&&videoBytes>100000;
+ await window.poseTest.result({ok,loaded,drawableCount:core.getDrawableCount(),parameterCount:core.getParameterCount(),results,breathMotion,minimumSleepHitY,visits:[...visits],frames:n,videoBytes});
+}catch(e){await window.poseTest.result({ok:false,error:e.stack});}})();
+</script>

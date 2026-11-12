@@ -65,3 +65,11 @@ live2d/model/GPTDragon.4096/
 live2d/model/GPTDragon.final.4096/
 live2d/model/GPTDragon.fullbody.4096/
 live2d/model/GPTDragon.rig.log.json
+
+# Generated QA and local render profiles
+tests/.side-render-profile/
+tests/.posture-render-profile/
+tests/sideview-render.json
+tests/posture-render.json
+tests/live2d-multiview.json
+live2d/model/sideviews/*.repaired.cmo3

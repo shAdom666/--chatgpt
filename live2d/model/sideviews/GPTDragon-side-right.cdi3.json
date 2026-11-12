@@ -1,0 +1,53 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "ParamOpacity",
+			"GroupId": "ParamGroupCustom",
+			"Name": "Opacity"
+		},
+		{
+			"Id": "ParamTail",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamTail"
+		},
+		{
+			"Id": "ParamWing",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamWing"
+		},
+		{
+			"Id": "ParamStrideFar",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamStrideFar"
+		},
+		{
+			"Id": "ParamStrideNear",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamStrideNear"
+		},
+		{
+			"Id": "ParamArmFar",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamArmFar"
+		},
+		{
+			"Id": "ParamBodySway",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamBodySway"
+		},
+		{
+			"Id": "ParamArmNear",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamArmNear"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroupCustom",
+			"GroupId": "",
+			"Name": "Custom"
+		}
+	],
+	"Parts": []
+}

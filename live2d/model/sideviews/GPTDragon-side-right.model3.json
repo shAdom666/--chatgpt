@@ -1,0 +1,10 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "GPTDragon-side-right.moc3",
+		"Textures": [
+			"GPTDragon-side-right.2048/texture_00.png"
+		],
+		"DisplayInfo": "GPTDragon-side-right.cdi3.json"
+	}
+}

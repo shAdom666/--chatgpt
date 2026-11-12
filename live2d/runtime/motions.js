@@ -54,7 +54,8 @@
    [1.02,{armL:14,armR:-13,elbowL:20,elbowR:-22,kneeL:.62,kneeR:.58,lift:21,hy:3.5}],
    [1.43,{armL:7,armR:-7,elbowL:11,elbowR:-12,kneeL:.08,kneeR:.09,lift:0}],
    [1.64,{by:-1,kneeL:.23,kneeR:.24,lift:-2.8,hy:-2}],[2.4,{}]]},
-  sleep:{label:'睡觉',duration:2.8,previewAt:1.6},
+  crouch:{label:'蹲下',duration:3,previewAt:2.4},
+  sleep:{label:'侧躺蜷睡',duration:4.8,previewAt:4.2},
   wake:{label:'慢慢醒来',duration:4.8,previewAt:2.3,keys:[
    [0,{close:1,hy:-7,hz:3,by:-1.4,armL:4,armR:-4,elbowL:8,elbowR:-9}],
    [.9,{close:.7,hy:-4,hz:1.8,armL:6,armR:-7,elbowL:15,elbowR:-17}],

@@ -1,0 +1,1 @@
+const {contextBridge,ipcRenderer}=require('electron');contextBridge.exposeInMainWorld('poseTest',{result:r=>ipcRenderer.invoke('pose:result',r),capture:r=>ipcRenderer.invoke('pose:capture',r),video:r=>ipcRenderer.invoke('pose:video',r)});

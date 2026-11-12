@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('pet', Object.freeze({
   action: name => ipcRenderer.invoke('pet:action', String(name)),
   modelUrl: () => ipcRenderer.invoke('pet:model'),
+  modelBundle: () => ipcRenderer.invoke('pet:model-bundle'),
   validation: () => ipcRenderer.invoke('pet:validation'),
   showcase: () => ipcRenderer.invoke('pet:showcase'),
   rigCheck: () => ipcRenderer.invoke('pet:rig-check'),

@@ -1,4 +1,4 @@
-param([ValidateSet('rig','animation','showcase','placement','model')][string]$Mode='animation')
+param([ValidateSet('rig','animation','showcase','placement','model','multiview')][string]$Mode='animation')
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 $runtime=Join-Path $root 'live2d\runtime'

@@ -6,7 +6,9 @@ Windows 白紫色 Q 版龙娘桌宠，使用真实 Live2D Cubism 模型，可连
 
 ## 功能
 
-- 33 个绘制网格、36 个模型参数和 4096×4096 纹理图集。
+- 正面模型：33 个绘制网格、36 个模型参数和 4096×4096 纹理图集。
+- 左右独立侧身模型：各 7 个网格、8 个参数；侧身走路、距离同步步频、减速后转向。
+- 下蹲、侧坐、侧撑、侧躺蜷睡及起身；蜷睡带轻微呼吸起伏。
 - 膝盖屈伸、手臂关节、身体重心、翅膀、尾巴，以及头发和衣裙物理。
 - 待机、走路、招手、开心、小跳、睡觉、醒来、伸懒腰、张望、点头、摊手与整理裙摆。
 - 沿桌面底边自由走动，拖动后平滑落地，也可关闭贴底自由摆放。
@@ -17,13 +19,11 @@ Windows 白紫色 Q 版龙娘桌宠，使用真实 Live2D Cubism 模型，可连
 
 ## 安装使用
 
-从 [Releases](https://github.com/shAdom666/--chatgpt/releases) 下载 `GPTDragonPet-Setup-1.0.0-x64.exe`。当前为 **v1.0.0 第一版**，后续在本仓库持续更新；各版本改动见 [CHANGELOG.md](CHANGELOG.md)。
+当前版本为 **v1.05**（程序内部版本号 `1.0.5`）。从 [v1.05 下载页](https://github.com/shAdom666/--chatgpt/releases/tag/v1.05) 下载 `GPTDragonPet-1.05-portable-x64.zip`，完整解压后双击 `GPTPet.exe`。运行包自带 Electron 和模型，不需要安装 Cubism 或 Node.js。改动见 [CHANGELOG.md](CHANGELOG.md)。
 
-安装包自带 Electron 和 Live2D 运行环境，不需要安装 Cubism 或 Node.js。目标环境为 Windows 10 2004+/Windows 11 的 x64 兼容系统，需 .NET Framework 4.8 或更新版本。
+目标环境为 Windows 10 2004+/Windows 11 的 x64 兼容系统，需 .NET Framework 4.8 或更新版本。便携版可解压到自己选择的文件夹；退出程序后删除该文件夹即可移除。此前的安装版仍可通过 Windows“已安装的应用”卸载。更新保留本机 GPT 连接设置，没有设置开机自启。
 
-安装到当前用户目录，可创建桌面快捷方式，通过 Windows“已安装的应用”卸载。没有设置开机自启，安装包目前未附加数字签名。
-
-单击角色打开聊天，按住拖动，右键选择动作及设置。“日常小动作”控制空闲时随机做动作。“贴住屏幕底边”关闭后可以自由摆放。
+单击角色打开聊天，按住拖动，右键选择动作及设置。新动作是“蹲下”“侧躺蜷睡”“起身”。睡觉时选择其他动作，会先起身。“日常小动作”控制空闲时随机做动作。“贴住屏幕底边”关闭后可以自由摆放。
 
 ## 连接 GPT
 
@@ -58,9 +58,15 @@ powershell -NoProfile -File build.ps1
 不调用 API 的基础检查：
 
 ```powershell
+npm ci --prefix live2d/tools
 node tests/live2d-walk.cjs
 node tests/natural-motion.cjs
+node tests/sideview-motion.cjs
+node tests/sideview-authoring.cjs
+node tests/posture-motion.cjs
 node live2d/tools/validate-model.mjs
+powershell -NoProfile -File tests/run-multiview.ps1
+powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode multiview
 powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode placement
 powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode rig
 powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode animation
