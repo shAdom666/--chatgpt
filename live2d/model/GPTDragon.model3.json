@@ -1,12 +1,12 @@
 {
   "Version": 3,
   "FileReferences": {
-    "Moc": "GPTDragon.natural.moc3",
+    "Moc": "front-repair/GPTDragon-front.moc3",
     "Textures": [
-      "GPTDragon.natural.4096/texture_00.png"
+      "front-repair/GPTDragon-front.4096/texture_00.png"
     ],
-    "Physics": "GPTDragon.natural.physics3.json",
-    "DisplayInfo": "GPTDragon.natural.cdi3.json"
+    "Physics": "front-repair/GPTDragon-front.physics3.json",
+    "DisplayInfo": "front-repair/GPTDragon-front.cdi3.json"
   },
   "Groups": [
     {

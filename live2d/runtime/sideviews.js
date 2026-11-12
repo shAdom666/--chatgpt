@@ -5,7 +5,7 @@ class SideViews {
   const bundle=await window.pet.modelBundle();
   if(bundle.views.length!==2)return {ready:false,reason:'侧身模型尚未导出，当前显示原模型。',loaded:[]};
   for(const view of bundle.views){
-   const m=await PIXI.live2d.Live2DModel.from(view.url,{autoInteract:false,autoUpdate:true});
+   const m=await PIXI.live2d.Live2DModel.from(view.url,{autoInteract:false,autoUpdate:false});
    m.alpha=0;this.app.stage.addChild(m);this.models[view.id]=m;
    const texture=await PIXI.Texture.fromURL(view.turnUrl),turn=new PIXI.Sprite(texture);turn.alpha=0;this.app.stage.addChild(turn);this.turns[view.id]=turn;
    m.internalModel.on('beforeModelUpdate',()=>{
@@ -31,6 +31,7 @@ class SideViews {
   for(const [id,m] of Object.entries(this.models)){
    const selected=((heading<0&&id==='left')||(heading>=0&&id==='right'));
    m.alpha=selected?b:0;this.turns[id].alpha=selected?a-b:0;
+   PetModelClock.advance(m,dt);
   }
  }
  bounds(){

@@ -1,4 +1,4 @@
-﻿param([string]$InstallerPath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-Setup-1.05-x64.exe'))
+﻿param([string]$InstallerPath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-Setup-1.1-x64.exe'))
 $ErrorActionPreference='Stop'
 $projectRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $installer=(Resolve-Path -LiteralPath $InstallerPath).Path
@@ -55,7 +55,7 @@ try {
   if(-not $testElectron.WaitForExit(25000)){throw 'Installed model did not finish rendering validation'}
   Assert-Check ($testElectron.ExitCode -eq 0) ('Installed model failed: '+$testElectron.ExitCode)
   $render=Get-Content -LiteralPath (Join-Path $installRoot 'tests\live2d-runtime.json') -Raw | ConvertFrom-Json
-  Assert-Check ($render.ok -and $render.vertexMotionVerified -and $render.physicsLoaded -and $render.parameterCount -eq 36 -and $render.render.visiblePixels -gt 5000) 'Installed render/animation failed'
+  Assert-Check ($render.ok -and $render.vertexMotionVerified -and $render.physicsLoaded -and $render.parameterCount -eq 39 -and $render.render.visiblePixels -gt 5000) 'Installed render/animation failed'
   $report.render=[ordered]@{parameters=$render.parameterCount;drawables=$render.drawableCount;visiblePixels=$render.render.visiblePixels;vertexMotion=$render.vertexMotionVerified;physics=$render.physicsLoaded}
   $bridgeOutput='{"op":"config"}' | & (Join-Path $installRoot 'GptBridge.exe')
   $bridge=$bridgeOutput | ConvertFrom-Json

@@ -9,12 +9,13 @@ import {prepareWriter} from './prepare-cubism-writer.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const {generateCmo3}=await prepareWriter();
 globalThis.OffscreenCanvas=(w,h)=>createCanvas(w,h);globalThis.Image=Image;
-const src=path.join(root,'live2d/source/postures'),out=path.join(root,'live2d/model/postures');
+const repaired=process.argv.includes('--repair');
+const src=path.join(root,'live2d/source/postures'),out=path.join(root,repaired?'live2d/model/postures-repair':'live2d/model/postures');
 await fs.mkdir(src,{recursive:true});await fs.mkdir(out,{recursive:true});
 const target=path.join(out,'GPTDragon-postures.cmo3');
 try{await fs.access(path.join(out,'GPTDragon-postures.moc3'));throw new Error('Preserve the exported authoring project; build drafts in a separate folder.');}catch(e){if(e.code!=='ENOENT')throw e;}
-const images={half:'84373674-780a-4dd5-8e4b-d6ab03afbb82',crouch:'9b0b4092-6c68-4fe7-a11b-17f63dfd8bd7',sit:'46faa38c-5b3e-49fb-a022-892417f144b9',lean:'600d1f3e-f2d1-4ef2-a9e1-52aeb16fa193',sleep:'b55479ee-4c56-4a82-b990-de3606aa35d4'};
-const generated=process.argv[2];
+const images={half:'84373674-780a-4dd5-8e4b-d6ab03afbb82',crouch:'9b0b4092-6c68-4fe7-a11b-17f63dfd8bd7',...(repaired?{reach:'d652e72c-3728-4a27-8918-7e4f8c9a4e32'}:{}),sit:'46faa38c-5b3e-49fb-a022-892417f144b9',...(repaired?{elbow:'cec43fc8-ea52-45e9-9f74-eaa7b32b4a6f'}:{}),lean:'600d1f3e-f2d1-4ef2-a9e1-52aeb16fa193',sleep:'b55479ee-4c56-4a82-b990-de3606aa35d4'},count=Object.keys(images).length;
+const generated=process.argv.slice(2).find(s=>!s.startsWith('--'));
 const meshes=[],warpDeformerNodes=[],tracks=[],bounds=[];
 for(const [id,generatedId] of Object.entries(images)){
  const file=path.join(src,id+'.png');if(generated)await fs.copyFile(path.join(generated,'exec-'+generatedId+'.png'),file);
@@ -32,7 +33,7 @@ for(const [id,generatedId] of Object.entries(images)){
  const keyframes=[0,1,2].map(k=>({time:k/2,value:Array.from({length:vertices.length/2},(_,i)=>{const x=vertices[i*2],y=vertices[i*2+1],weight=Math.max(0,Math.min(1,(1400-y)/600));return {x:x+(k-1)*(x-512)*.002*weight,y:y-(k-1)*2.5*weight};})}));
  tracks.push({nodeId:id,property:'mesh_verts',keyframes});
 }
-const result=await generateCmo3({canvasW:1024,canvasH:1536,meshes,parameters:[{id:'ParamPose',min:0,max:4,default:0},{id:'ParamPostureBreath',min:0,max:2,default:1}],warpDeformerNodes,animations:[{name:'Posture breathing',tracks}],modelName:'GPTDragon-postures',generateRig:false,generatePhysics:false});
+const result=await generateCmo3({canvasW:1024,canvasH:1536,meshes,parameters:[{id:'ParamPose',min:0,max:count-1,default:0},{id:'ParamPostureBreath',min:0,max:2,default:1}],warpDeformerNodes,animations:[{name:'Posture breathing',tracks}],modelName:'GPTDragon-postures',generateRig:false,generatePhysics:false});
 const main=result.sourceFiles.find(e=>e.path==='main.xml');let xml=Buffer.from(main.content).toString('utf8');
 const poseParam=[...xml.matchAll(/<CParameterSource>[\s\S]*?<\/CParameterSource>/g)].map(m=>m[0]).find(b=>b.includes('>ParamPose<'));
 if(!poseParam)throw new Error('Pose parameter missing');
@@ -49,14 +50,14 @@ for(let index=0;index<meshes.length;index++){
  const binding=xml.match(new RegExp('<KeyformBindingSource xs.id="'+bindingId+'"[\\s\\S]*?<\\/KeyformBindingSource>'))[0];
  const form=source.match(/<CArtMeshForm>[\s\S]*?<\/CArtMeshForm>/)[0],originalGuid=form.match(/<CFormGuid xs.n="guid" xs.ref="([^"]+)"/)[1];
  const template=grid.match(/<KeyformOnGrid>[\s\S]*?<\/KeyformOnGrid>/)[0];
- const guids=Array.from({length:5},(_,i)=>{if(i===0)return originalGuid;const number=serial++,guid='#'+number;shared+='<CFormGuid xs.id="'+guid+'" xs.idx="'+number+'" uuid="'+randomUUID()+'" note="'+name+'_pose_'+i+'"/>\n';return guid;});
+ const guids=Array.from({length:count},(_,i)=>{if(i===0)return originalGuid;const number=serial++,guid='#'+number;shared+='<CFormGuid xs.id="'+guid+'" xs.idx="'+number+'" uuid="'+randomUUID()+'" note="'+name+'_pose_'+i+'"/>\n';return guid;});
  const forms=guids.map((g,i)=>form.replace('xs.ref="'+originalGuid+'"','xs.ref="'+g+'"').replace(/<f xs.n="opacity">[^<]+/, '<f xs.n="opacity">'+(i===index?'1.0':'0.0'))).join('');
- const newSource=source.replace(/<carray_list xs.n="keyforms" count="1">[\s\S]*?<\/carray_list>/,'<carray_list xs.n="keyforms" count="5">'+forms+'</carray_list>');
- const newGrid=grid.replace('keyformsOnGrid" count="1"','keyformsOnGrid" count="5"').replace(template,guids.map((g,i)=>template.replace('xs.ref="'+originalGuid+'"','xs.ref="'+g+'"').replace('<i xs.n="keyIndex">0</i>','<i xs.n="keyIndex">'+i+'</i>')).join(''));
- const newBinding=binding.replace(/<CParameterGuid xs.n="parameterGuid" xs.ref="[^"]+"/,'<CParameterGuid xs.n="parameterGuid" xs.ref="'+poseGuid+'"').replace(/<array_list xs.n="keys" count="1">[\s\S]*?<\/array_list>/,'<array_list xs.n="keys" count="5">'+[0,1,2,3,4].map(i=>'<f>'+i+'.0</f>').join('')+'</array_list>').replace('>ParamOpacity<','>ParamPose<');
+ const newSource=source.replace(/<carray_list xs.n="keyforms" count="1">[\s\S]*?<\/carray_list>/,'<carray_list xs.n="keyforms" count="'+count+'">'+forms+'</carray_list>');
+ const newGrid=grid.replace('keyformsOnGrid" count="1"','keyformsOnGrid" count="'+count+'"').replace(template,guids.map((g,i)=>template.replace('xs.ref="'+originalGuid+'"','xs.ref="'+g+'"').replace('<i xs.n="keyIndex">0</i>','<i xs.n="keyIndex">'+i+'</i>')).join(''));
+ const newBinding=binding.replace(/<CParameterGuid xs.n="parameterGuid" xs.ref="[^"]+"/,'<CParameterGuid xs.n="parameterGuid" xs.ref="'+poseGuid+'"').replace(/<array_list xs.n="keys" count="1">[\s\S]*?<\/array_list>/,'<array_list xs.n="keys" count="'+count+'">'+Array.from({length:count},(_,i)=>'<f>'+i+'.0</f>').join('')+'</array_list>').replace('>ParamOpacity<','>ParamPose<');
  xml=xml.replace(source,newSource).replace(grid,newGrid).replace(binding,newBinding);
 }
 xml=xml.replace('</shared>',shared+'</shared>');main.content=Buffer.from(xml);
 await fs.writeFile(target,await packCaff(result.sourceFiles,42));
 await fs.writeFile(path.join(out,'bounds.json'),JSON.stringify({canvas:[1024,1536],anchor:[512,1400],poses:bounds},null,2)+'\n');
-console.log('Authored 5 pose meshes with shared pose opacity and breathing warps:',target);
+console.log('Authored '+count+' pose meshes with shared pose opacity and breathing warps:',target);

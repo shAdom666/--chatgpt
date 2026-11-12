@@ -3,6 +3,7 @@ contextBridge.exposeInMainWorld('pet', Object.freeze({
   action: name => ipcRenderer.invoke('pet:action', String(name)),
   modelUrl: () => ipcRenderer.invoke('pet:model'),
   modelBundle: () => ipcRenderer.invoke('pet:model-bundle'),
+  postureStatus: value => ipcRenderer.send('pet:posture-status',Boolean(value)),
   validation: () => ipcRenderer.invoke('pet:validation'),
   showcase: () => ipcRenderer.invoke('pet:showcase'),
   rigCheck: () => ipcRenderer.invoke('pet:rig-check'),

@@ -1,0 +1,33 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "ParamOpacity",
+			"GroupId": "ParamGroupCustom",
+			"Name": "Opacity"
+		},
+		{
+			"Id": "ParamPose",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamPose"
+		},
+		{
+			"Id": "ParamPostureBreath",
+			"GroupId": "ParamGroupCustom",
+			"Name": "ParamPostureBreath"
+		},
+		{
+			"Id": "ParamTransition",
+			"GroupId": "",
+			"Name": "ParamTransition"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroupCustom",
+			"GroupId": "",
+			"Name": "Custom"
+		}
+	],
+	"Parts": []
+}

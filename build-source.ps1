@@ -1,4 +1,4 @@
-﻿param([string]$Destination=(Join-Path $PSScriptRoot '..\GPTDragonPet-1.05-source.zip'))
+﻿param([string]$Destination=(Join-Path $PSScriptRoot '..\GPTDragonPet-1.1-source.zip'))
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -14,7 +14,7 @@ function Add-SourceDirectory([string]$Directory){
   $relative=$item.FullName.Substring($sourceRoot.Length+1).Replace('\','/')
   if($item.Name -match '(^\.env|^(local\.)?settings\.json$|\.(log|bak|tmp|pem|key|user|suo)$|\.repaired\.cmo3$|^GPTPetWalkCheck\.exe|^CoreTests\.exe$|^MotionTests\.exe$)'){continue}
   if($relative -match '^tests/(live2d-(?!neutral\.fixture)[^/]+\.json|sideview-render\.json|posture-render\.json)$'){continue}
-  if($relative -eq 'live2d/model/GPTDragon.natural.cmo3' -and $item.Length -lt 10000){throw 'Editable model is a Git LFS pointer; fetch the original first'}
+  if($item.Extension -eq '.cmo3' -and $item.Length -lt 10000){throw ('Editable model may be a Git LFS pointer; fetch the original first: '+$relative)}
   $null=[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,$item.FullName,$relative,[IO.Compression.CompressionLevel]::Optimal)
   $script:count++
  }

@@ -5,7 +5,7 @@ const expected={ParamRotation_legLeft:'ArtMesh6',ParamRotation_legRight:'ArtMesh
 for(const [id,mesh] of Object.entries(expected)){const p=report.parameters.find(p=>p.id===id);assert(p?.displacement[mesh]>20,id+' must deform its own mesh');}
 for(const mesh of ['ArtMesh8','ArtMesh9'])assert(report.parameters.find(p=>p.id==='ParamRotation_body').displacement[mesh]>20,'body must drive clothing');
 for(const mesh of ['ArtMesh19','ArtMesh20','ArtMesh21','ArtMesh23'])assert(report.parameters.find(p=>p.id==='ParamAngleX').displacement[mesh]>5,'head ornaments must follow the head');
-let neutralError=0;for(const p of report.neutral){const original=before.neutral.find(n=>n.id===p.id);p.bounds.forEach((v,i)=>{neutralError=Math.max(neutralError,Math.abs(v-original.bounds[i]));});}
+let neutralError=0;for(const p of report.neutral){const original=before.neutral.find(n=>n.id===p.id);if(!original){assert.equal(p.id,'ArtMesh33','only the new lining mesh may lack a baseline');continue;}p.bounds.forEach((v,i)=>{neutralError=Math.max(neutralError,Math.abs(v-original.bounds[i]));});}
 assert(neutralError<.2,'Reparenting must preserve the neutral pose: '+neutralError+' source pixels');
 console.log('PASS leg, wing, tail, clothing and head ornament bindings; neutral pose error '+neutralError.toFixed(4)+' source pixels');
 const animation=JSON.parse(fs.readFileSync(path.join(__dirname,'live2d-animation.json'),'utf8'));

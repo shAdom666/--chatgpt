@@ -21,7 +21,7 @@ protocol.registerSchemesAsPrivileged([{scheme:'pet',privileges:{standard:true,se
 let petWindow,chatWindow,tray,timer,pending,drag=null,menuOpen=false,placed=false,mode='idle',modeUntil=0;
 let walking=true,top=true,grounded=true,autoGestures=true,x=0,y=0,v=0,vRate=0,direction=-1,last=Date.now(),nextWalk=Date.now()+20000,walkUntil=0,turns=0,walkDistance=0,actionToken=0,nextGesture=Date.now()+11000;
 let modelDiagnostics=null,lastGesture='',multiviewStarted=false;
-let gait={heading:0,stage:'idle',turnAge:0},queuedAction=null;
+let gait={heading:0,stage:'idle',turnAge:0},queuedAction=null,postureStanding=true,actionStarted=0;
 const petSize={width:animationCheck?640:320,height:animationCheck?940:470};
 if(!app.requestSingleInstanceLock()){app.quit();} else {
 app.on('second-instance',(_event,args)=>{ if(args.includes('--chat'))showChat(); else if(petWindow){if(petWindow.isMinimized())petWindow.restore();petWindow.show();home();} });
@@ -38,7 +38,7 @@ function safeWindow(file,options){
 function sendState(){if(petWindow&&!petWindow.isDestroyed())petWindow.webContents.send('pet:state',{mode:menuOpen&&mode==='walk'?'idle':mode,direction,walking,token:actionToken});}
 function act(value,duration){
  if(!['sleep','crouch','wake'].includes(value)&&(['sleep','crouch'].includes(mode)||(mode==='wake'&&queuedAction))){queuedAction={value,duration};if(mode==='wake')return;value='wake';duration=4800;}else queuedAction=null;
- mode=value;actionToken++;modeUntil=Date.now()+(duration??((catalog[value]?.duration||3)*1000));walkUntil=0;nextWalk=modeUntil+10000+Math.random()*12000;nextGesture=modeUntil+12000+Math.random()*16000;sendState();
+ mode=value;actionToken++;actionStarted=Date.now();modeUntil=actionStarted+(duration??((catalog[value]?.duration||3)*1000));walkUntil=0;nextWalk=modeUntil+10000+Math.random()*12000;nextGesture=modeUntil+12000+Math.random()*16000;sendState();
 }
 function stopGait(){v=vRate=0;gait={heading:0,stage:'idle',turnAge:0};if(petWindow&&!petWindow.isDestroyed())petWindow.webContents.send('pet:gaze',{x:0,y:0,speed:0,distance:walkDistance/(petSize.width/320),heading:0,stage:'idle'});}
 // Never feed getBounds().width/height back into a move: fractional Windows DPI
@@ -103,7 +103,7 @@ async function start(){
    }catch{}
   }
   let postures=null;
-  try{const relative='postures/GPTDragon-postures.model3.json',file=path.join(modelFolder,relative),base=path.dirname(file),data=JSON.parse(fs.readFileSync(file,'utf8'));if([data.FileReferences.Moc,...data.FileReferences.Textures].every(f=>typeof f==='string'&&path.resolve(base,f).startsWith(base+path.sep)&&fs.existsSync(path.resolve(base,f))))postures={url:'pet://app/model/'+relative,bounds:JSON.parse(fs.readFileSync(path.join(base,'bounds.json'),'utf8'))};}catch{}
+  try{const relative='postures-repair/GPTDragon-postures.model3.json',file=path.join(modelFolder,relative),base=path.dirname(file),data=JSON.parse(fs.readFileSync(file,'utf8'));if([data.FileReferences.Moc,...data.FileReferences.Textures].every(f=>typeof f==='string'&&path.resolve(base,f).startsWith(base+path.sep)&&fs.existsSync(path.resolve(base,f))))postures={url:'pet://app/model/'+relative,bounds:JSON.parse(fs.readFileSync(path.join(base,'bounds.json'),'utf8'))};}catch{}
   return {views,postures};
  });
  ipcMain.handle('pet:validation',e=>e.sender===petWindow.webContents&&animationCheck);
@@ -130,6 +130,7 @@ async function start(){
  ipcMain.on('pet:drag-start',e=>{if(e.sender!==petWindow.webContents)return;const p=screen.getCursorScreenPoint(),b=petWindow.getBounds();if(mode==='walk')mode='idle';walkUntil=0;stopGait();sendState();drag={x:p.x,y:p.y,windowX:b.x,windowY:b.y,moved:0};petWindow.setIgnoreMouseEvents(false);});
  ipcMain.handle('pet:drag-end',e=>{if(e.sender!==petWindow.webContents||!drag)return false;return finishDrag()<5;});
  ipcMain.on('pet:drag-cancel',e=>{if(e.sender===petWindow.webContents)finishDrag();});
+ ipcMain.on('pet:posture-status',(e,value)=>{if(e.sender===petWindow.webContents&&typeof value==='boolean')postureStanding=value;});
  petWindow.on('blur',()=>{if(drag)finishDrag();});
  ipcMain.on('pet:click-through',(e,enabled)=>{if(e.sender===petWindow.webContents&&!drag)petWindow.setIgnoreMouseEvents(enabled,{forward:true});});
  ipcMain.on('pet:ready',(e,info)=>{if(e.sender!==petWindow.webContents)return;modelDiagnostics=info;if(!verifyMode&&!petWindow.isVisible()&&(info.loaded||!info.ok)){home();petWindow.showInactive();}if(process.argv.includes('--diagnostics')||verifyMode)fs.writeFileSync(path.join(root,engineCheck?'tests/live2d-engine.json':showcaseCheck?'tests/live2d-showcase.json':animationCheck?'tests/live2d-animation.json':'tests/live2d-runtime.json'),JSON.stringify(info,null,2));sendState();if(multiviewCheck&&info.loaded&&!multiviewStarted){multiviewStarted=true;validateMultiview();}if(verifyMode&&!multiviewCheck&&(!info.ok||info.seconds))app.exit(info.ok&&info.vertexMotionVerified&&info.render?.visiblePixels>5000?0:1);});
@@ -148,12 +149,12 @@ async function start(){
 }
 async function validateMultiview(){
  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),checks=[];
- const inspect=()=>petWindow.webContents.executeJavaScript('({progress:postures?.frame?.progress,posturesReady:postures?.ready,sidesReady:sideviews?.ready,frontAlpha:model.alpha})');
+ const inspect=()=>petWindow.webContents.executeJavaScript('({progress:postures?.frame?.progress,max:postures?.controller?.max,posturesReady:postures?.ready,sidesReady:sideviews?.ready,frontAlpha:model.alpha})');
  try{
   walking=autoGestures=false;act('crouch',3600000);await wait(2200);const crouch=await inspect();checks.push({name:'crouch holds',ok:mode==='crouch'&&Math.abs(crouch.progress-2)<.01,...crouch});
-  act('sleep',3600000);await wait(2500);const sleeping=await inspect();checks.push({name:'sleep curls',ok:mode==='sleep'&&Math.abs(sleeping.progress-5)<.01,...sleeping});
+  act('sleep',3600000);await wait(3600);const sleeping=await inspect();checks.push({name:'sleep curls',ok:mode==='sleep'&&sleeping.max===7&&Math.abs(sleeping.progress-sleeping.max)<.01,...sleeping});
   act('wave');await wait(500);const waking=await inspect();checks.push({name:'gesture waits for get-up',ok:mode==='wake'&&queuedAction?.value==='wave'&&waking.progress>0,...waking});
-  await wait(4600);const standing=await inspect();checks.push({name:'gesture begins standing',ok:mode==='wave'&&standing.progress===0&&standing.frontAlpha===1&&standing.posturesReady&&standing.sidesReady,...standing});
+  await wait(4700);const standing=await inspect();checks.push({name:'gesture begins standing',ok:mode==='wave'&&standing.progress===0&&standing.frontAlpha===1&&standing.posturesReady&&standing.sidesReady,...standing});
   const ok=checks.every(c=>c.ok);fs.writeFileSync(path.join(root,'tests/live2d-multiview.json'),JSON.stringify({ok,checks,apiCalls:0},null,2));app.exit(ok?0:1);
  }catch(error){fs.writeFileSync(path.join(root,'tests/live2d-multiview.json'),JSON.stringify({ok:false,error:error.stack,checks},null,2));app.exit(1);}
 }
@@ -163,7 +164,8 @@ function tick(){
  const now=Date.now(),dt=Math.min(.1,(now-last)/1000);last=now;
  const p=screen.getCursorScreenPoint(),b=petWindow.getBounds();
  if(drag){const nx=drag.windowX+p.x-drag.x,ny=drag.windowY+p.y-drag.y;drag.moved=Math.max(drag.moved,Math.abs(p.x-drag.x)+Math.abs(p.y-drag.y));movePet(nx,ny);x=nx;y=ny;return;}
- if(now>modeUntil&&queuedAction){const queued=queuedAction;queuedAction=null;act(queued.value,queued.duration);}
+ if(mode==='wake'&&!postureStanding&&now>modeUntil)modeUntil=now+100;
+ if(queuedAction&&postureStanding&&(now>modeUntil||(mode==='wake'&&now-actionStarted>350))){const queued=queuedAction;queuedAction=null;act(queued.value,queued.duration);}
  if(now>modeUntil){if(mode!=='idle'&&mode!=='walk'){mode='idle';sendState();}
   if(now>nextWalk){nextWalk=now+20000;if(walking)walkUntil=now+4500;}
   const next=walking&&now<walkUntil?'walk':'idle';if(next!==mode){mode=next;sendState();}

@@ -1,0 +1,10 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "GPTDragon-postures.moc3",
+		"Textures": [
+			"GPTDragon-postures.4096/texture_00.png"
+		],
+		"DisplayInfo": "GPTDragon-postures.cdi3.json"
+	}
+}

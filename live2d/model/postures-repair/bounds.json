@@ -1,0 +1,82 @@
+{
+  "canvas": [
+    1024,
+    1536
+  ],
+  "anchor": [
+    512,
+    1400
+  ],
+  "poses": [
+    {
+      "id": "half",
+      "rect": [
+        61,
+        164,
+        862,
+        1400
+      ],
+      "sourceGroundShift": 4
+    },
+    {
+      "id": "crouch",
+      "rect": [
+        54,
+        312,
+        979,
+        1400
+      ],
+      "sourceGroundShift": -15
+    },
+    {
+      "id": "reach",
+      "rect": [
+        8,
+        317,
+        1016,
+        1400
+      ],
+      "sourceGroundShift": 0
+    },
+    {
+      "id": "sit",
+      "rect": [
+        13,
+        363,
+        1008,
+        1400
+      ],
+      "sourceGroundShift": 42
+    },
+    {
+      "id": "elbow",
+      "rect": [
+        14,
+        632,
+        1011,
+        1400
+      ],
+      "sourceGroundShift": 27
+    },
+    {
+      "id": "lean",
+      "rect": [
+        24,
+        676,
+        1004,
+        1400
+      ],
+      "sourceGroundShift": 21
+    },
+    {
+      "id": "sleep",
+      "rect": [
+        14,
+        819,
+        1005,
+        1400
+      ],
+      "sourceGroundShift": -45
+    }
+  ]
+}

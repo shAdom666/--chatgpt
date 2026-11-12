@@ -8,7 +8,7 @@ const start=performance.now();
 const controller=new PetMotions.Controller();let lastParameterTime=performance.now(),currentPose={params:{},close:0,lift:0,offsetX:0,skirt:0},locomotion={speed:0,distance:0},actionToken=0;
 let testing=false,showcase=false,testStarted=0,testDistance=0,previewModeAge=0;const capturedModes=new Set(),captureStats={},bodyMotion={},bodyBaselines={};
 let previewRecorder,previewStream,previewChunks=[];
-let sideviews,postures,postureDiagnostics={ready:false},sideDiagnostics={ready:false,loaded:[]},lastSideFrame=performance.now();
+let sideviews,postures,postureStanding=true,postureDiagnostics={ready:false},sideDiagnostics={ready:false,loaded:[]},lastSideFrame=performance.now();
 async function finishPreview(){if(!previewRecorder)return 0;await new Promise(resolve=>{previewRecorder.onstop=resolve;previewRecorder.stop();});previewStream.getTracks().forEach(t=>t.stop());return window.pet.previewVideo(await new Blob(previewChunks,{type:'video/webm'}).arrayBuffer());}
 window.pet.onState(state=>{if(testing)return;if(state.mode!==mode||actionToken!==state.token){modeStarted=performance.now()/1000;mode=state.mode;actionToken=state.token;}direction=state.direction;});
 window.pet.onGaze(value=>{if(testing)return;gaze=value;locomotion={speed:value.speed||0,distance:value.distance||0};});
@@ -23,7 +23,7 @@ function renderDiagnostics(){
 }
 (async()=>{
  try{
-  model=await PIXI.live2d.Live2DModel.from(await window.pet.modelUrl(),{autoInteract:false,autoUpdate:true});
+  model=await PIXI.live2d.Live2DModel.from(await window.pet.modelUrl(),{autoInteract:false,autoUpdate:false});
   if(await window.pet.rigCheck()){window.pet.rigResult(auditRig(model.internalModel.coreModel));return;}
   testing=await window.pet.validation();showcase=await window.pet.showcase();controller.seed=testing?.37:Math.random();testStarted=performance.now();
   if(testing){previewStream=app.view.captureStream(60);previewRecorder=new MediaRecorder(previewStream,{mimeType:MediaRecorder.isTypeSupported('video/webm;codecs=vp9')?'video/webm;codecs=vp9':'video/webm',videoBitsPerSecond:showcase?1200000:2000000});previewRecorder.ondataavailable=e=>{if(e.data.size)previewChunks.push(e.data);};previewRecorder.start();}
@@ -42,7 +42,8 @@ function renderDiagnostics(){
     mode=entry.id;previewModeAge=elapsed;gaze={x:Math.sin(now/1000*.4)*.35,y:.1};
     const speed=mode==='walk'?28:0;testDistance+=speed*dt;locomotion={speed,distance:testDistance};
    }
-   currentPose=controller.update(dt,{mode,gaze,speed:locomotion.speed,distance:locomotion.distance,direction,token:testing?mode:actionToken});
+   const poseGaze=!testing&&(['crouch','sleep','wake'].includes(mode)||(postures?.frame?.progress||0)>0)?{x:0,y:0}:gaze;
+   currentPose=controller.update(dt,{mode,gaze:poseGaze,speed:locomotion.speed,distance:locomotion.distance,direction,token:testing?mode:actionToken});
    for(const [id,value] of Object.entries(currentPose.params)){
     if(id==='ParamRotation_leftElbow'||id==='ParamRotation_rightElbow'){range(id,value);continue;}
     set(id,value);
@@ -50,9 +51,9 @@ function renderDiagnostics(){
   });
   model.internalModel.on('beforeModelUpdate',()=>{
    const core=model.internalModel.coreModel;
-   // Physics owns the idle elbow sway. Add the deliberate gesture afterwards,
-   // so a 100% physics output cannot erase the wave's elbow keyform.
-   for(const id of ['ParamRotation_leftElbow','ParamRotation_rightElbow'])core.setParameterValueById(id,(currentPose.params[id]||0)+core.getParameterValueById(id)*.45);
+   // The joint controller owns arm joints; cloth/hair physics cannot add a
+   // second elbow rotation or erase the hand's delayed follow-through.
+   for(const id of ['ParamRotation_leftElbow','ParamRotation_rightElbow','ParamWristL','ParamWristR'])core.setParameterValueById(id,currentPose.params[id]||0);
    for(const id of ['ParamEyeLOpen','ParamEyeROpen'])core.setParameterValueById(id,core.getParameterValueById(id)*(1-currentPose.close));
    core.addParameterValueById('ParamSkirt',currentPose.skirt);
    range('applied_rightElbow',core.getParameterValueById('ParamRotation_rightElbow'));
@@ -62,6 +63,8 @@ function renderDiagnostics(){
   });
   app.ticker.add(()=>{
    const nowSide=performance.now(),viewDt=(nowSide-lastSideFrame)/1000;if(sideviews?.ready)sideviews.update(viewDt,locomotion,gaze.heading||0);else model.alpha=1;if(postures)postures.update(viewDt,{mode,speed:locomotion.speed,heading:gaze.heading||0});lastSideFrame=nowSide;
+   if(postures?.ready&&postureStanding!==postures.frame.standing){postureStanding=postures.frame.standing;window.pet.postureStatus(postureStanding);}
+   PetModelClock.advance(model,viewDt);
    const ratio=innerWidth/320;model.position.set(innerWidth/2+currentPose.offsetX*ratio,innerHeight-9-currentPose.lift*ratio);
    frameCount++;
    if(testing&&frameCount%8===0){

@@ -6,9 +6,9 @@ Windows 白紫色 Q 版龙娘桌宠，使用真实 Live2D Cubism 模型，可连
 
 ## 功能
 
-- 正面模型：33 个绘制网格、36 个模型参数和 4096×4096 纹理图集。
+- 正面模型：34 个绘制网格、39 个模型参数和 4096×4096 纹理图集。
 - 左右独立侧身模型：各 7 个网格、8 个参数；侧身走路、距离同步步频、减速后转向。
-- 下蹲、侧坐、侧撑、侧躺蜷睡及起身；蜷睡带轻微呼吸起伏。
+- 半蹲、深蹲、手掌撑地、侧坐、肘部支撑、侧撑、侧躺蜷睡及起身；切换时只显示一个角色，蜷睡带轻微呼吸起伏。
 - 膝盖屈伸、手臂关节、身体重心、翅膀、尾巴，以及头发和衣裙物理。
 - 待机、走路、招手、开心、小跳、睡觉、醒来、伸懒腰、张望、点头、摊手与整理裙摆。
 - 沿桌面底边自由走动，拖动后平滑落地，也可关闭贴底自由摆放。
@@ -19,7 +19,7 @@ Windows 白紫色 Q 版龙娘桌宠，使用真实 Live2D Cubism 模型，可连
 
 ## 安装使用
 
-当前版本为 **v1.05**（程序内部版本号 `1.0.5`）。从 [v1.05 下载页](https://github.com/shAdom666/--chatgpt/releases/tag/v1.05) 下载 `GPTDragonPet-1.05-portable-x64.zip`，完整解压后双击 `GPTPet.exe`。运行包自带 Electron 和模型，不需要安装 Cubism 或 Node.js。改动见 [CHANGELOG.md](CHANGELOG.md)。
+当前版本为 **v1.1**（程序内部版本号 `1.1.0`）。从 [v1.1 下载页](https://github.com/shAdom666/--chatgpt/releases/tag/v1.1) 下载 `GPTDragonPet-1.1-portable-x64.zip`，完整解压后双击 `GPTPet.exe`。运行包自带 Electron 和模型，不需要安装 Cubism 或 Node.js。改动见 [CHANGELOG.md](CHANGELOG.md)。
 
 目标环境为 Windows 10 2004+/Windows 11 的 x64 兼容系统，需 .NET Framework 4.8 或更新版本。便携版可解压到自己选择的文件夹；退出程序后删除该文件夹即可移除。此前的安装版仍可通过 Windows“已安装的应用”卸载。更新保留本机 GPT 连接设置，没有设置开机自启。
 
@@ -63,6 +63,7 @@ node tests/live2d-walk.cjs
 node tests/natural-motion.cjs
 node tests/sideview-motion.cjs
 node tests/sideview-authoring.cjs
+node tests/front-rig-authoring.cjs
 node tests/posture-motion.cjs
 node live2d/tools/validate-model.mjs
 powershell -NoProfile -File tests/run-multiview.ps1
@@ -79,7 +80,7 @@ node tests/natural-showcase.cjs
 
 ## 编辑模型
 
-- 当前可编辑工程：`live2d/model/GPTDragon.natural.cmo3`，通过 Git LFS 保存。
+- 当前正面工程：`live2d/model/front-repair/GPTDragon-front.cmo3`，起卧工程：`live2d/model/postures-repair/GPTDragon-postures.cmo3`，均通过 Git LFS 保存。原版 `GPTDragon.natural.cmo3` 保留作历史参考。
 - 分层 PSD：`live2d/source/GPTDragon.layers.psd`。
 - 图层、底图及拆分数据：`live2d/source/`。
 - 运行入口：`live2d/model/GPTDragon.model3.json`。
@@ -87,7 +88,7 @@ node tests/natural-showcase.cjs
 - 模型制作记录：`live2d/制作进度.txt`、`live2d/修复记录.txt`。
 
 编辑 `.cmo3` 需要自行安装、授权 Live2D Cubism Editor。仓库不包含编辑器、试用授权或其他开发工具安装程序。
-重新导出当前模型后运行 `node live2d/tools/finalize-model.mjs` 与模型检查脚本。
+重新导出后，对相应模型的 `.model3.json` 运行 `live2d/tools/premultiply-export.mjs`，再运行 `node live2d/tools/activate-front-repair.mjs` 与模型检查脚本。详细步骤与制作范围见 [多视角与姿势素材说明](live2d/source/MULTIVIEW.md)。
 
 工程生成脚本参考 StretchyStudio。若需从分层源图重建初始工程，可将该项目的提交 `24a83a27ba43e43e9d2e3de5e33994594e6199c2` 检出到 `third_party/stretchystudio`，再安装 `live2d/tools` 的依赖。`build-project.mjs` 会生成初始工程；`refine-mouth.py`、`repair-fullbody.py`、`add-knee-rig.py` 依赖各阶段的中间工程，不能直接对最终工程重复执行。历史中间工程未上传，当前最终工程可直接打开编辑。
 

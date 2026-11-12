@@ -1,4 +1,4 @@
-﻿龙娘桌宠 Live2D 1.05
+﻿龙娘桌宠 Live2D 1.1
 
 启动：便携版请完整解压后双击 GPTPet.exe。安装版也可从桌面或开始菜单启动。
 运行包自带模型和运行环境，不需要 Cubism、Node.js 或另装 Electron。

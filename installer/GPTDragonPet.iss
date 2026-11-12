@@ -4,13 +4,13 @@
 #ifndef OutputFolder
   #error OutputFolder must be supplied by build-installer.ps1
 #endif
-#define PetVersion "1.05"
+#define PetVersion "1.1"
 
 [Setup]
 AppId={{2A7D71DF-13CB-4E14-B665-421C58AC6078}
 AppName=龙娘桌宠 Live2D
 AppVersion={#PetVersion}
-VersionInfoVersion=1.0.5.0
+VersionInfoVersion=1.1.0.0
 AppVerName=龙娘桌宠 Live2D {#PetVersion}
 VersionInfoDescription=龙娘桌宠 Live2D 安装程序
 DefaultDirName={localappdata}\Programs\GPTDragonPet

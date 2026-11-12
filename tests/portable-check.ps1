@@ -1,4 +1,4 @@
-﻿param([string]$PackagePath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-1.05-portable-x64.zip'))
+﻿param([string]$PackagePath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-1.1-portable-x64.zip'))
 $ErrorActionPreference='Stop'
 $projectRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $packageFile=(Resolve-Path -LiteralPath $PackagePath).Path

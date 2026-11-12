@@ -1,0 +1,4 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {readProject,writeProject} from './cubism-project.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..'),file=path.join(root,'live2d/model/postures-repair/GPTDragon-postures.cmo3'),project=await readProject(file),xml=await fs.readFile(path.join(root,'_build/posture-fix/repaired.xml'));
+const ids=new Set([...xml.toString().matchAll(/xs.id="([^"]+)"/g)].map(m=>m[1]));for(const m of xml.toString().matchAll(/xs.ref="([^"]+)"/g))if(!ids.has(m[1]))throw new Error('Dangling native reference '+m[1]);
+project.entries.find(e=>e.path==='main.xml').content=xml;await writeProject(file,project);console.log('Packed native continuous-pose repair project; official Editor export required');

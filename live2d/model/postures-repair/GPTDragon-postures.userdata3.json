@@ -1,0 +1,44 @@
+{
+	"Version": 3,
+	"Meta": {
+		"UserDataCount": 7,
+		"TotalUserDataSize": 49
+	},
+	"UserData": [
+		{
+			"Target": "ArtMesh",
+			"Id": "ArtMesh0",
+			"Value": "\n      "
+		},
+		{
+			"Target": "ArtMesh",
+			"Id": "ArtMesh1",
+			"Value": "\n      "
+		},
+		{
+			"Target": "ArtMesh",
+			"Id": "ArtMesh2",
+			"Value": "\n      "
+		},
+		{
+			"Target": "ArtMesh",
+			"Id": "ArtMesh3",
+			"Value": "\n      "
+		},
+		{
+			"Target": "ArtMesh",
+			"Id": "ArtMesh4",
+			"Value": "\n      "
+		},
+		{
+			"Target": "ArtMesh",
+			"Id": "ArtMesh5",
+			"Value": "\n      "
+		},
+		{
+			"Target": "ArtMesh",
+			"Id": "ArtMesh6",
+			"Value": "\n      "
+		}
+	]
+}

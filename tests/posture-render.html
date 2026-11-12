@@ -1,29 +1,52 @@
 <!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#f1eef5;overflow:hidden}canvas{display:block}</style><body>
-<script src="../live2d/runtime/vendor/live2dcubismcore.min.js"></script><script src="../live2d/runtime/node_modules/pixi.js/dist/browser/pixi.min.js"></script><script src="../live2d/runtime/node_modules/pixi-live2d-display/dist/cubism4.min.js"></script><script src="../live2d/runtime/postures.js"></script>
+<script src="../live2d/runtime/vendor/live2dcubismcore.min.js"></script><script src="../live2d/runtime/node_modules/pixi.js/dist/browser/pixi.min.js"></script><script src="../live2d/runtime/node_modules/pixi-live2d-display/dist/cubism4.min.js"></script><script src="../live2d/runtime/model-clock.js"></script><script src="../live2d/runtime/postures.js"></script>
 <script>
 (async()=>{try{
  window.PIXI=PIXI;const app=new PIXI.Application({width:640,height:940,backgroundAlpha:0,antialias:true,preserveDrawingBuffer:true});document.body.appendChild(app.view);
- const front=await PIXI.live2d.Live2DModel.from('../live2d/model/GPTDragon.model3.json',{autoInteract:false,autoUpdate:true});app.stage.addChild(front);front.pivot.set(512,1419);front.scale.set(600/1024);front.position.set(320,920);
- const metadata=await (await fetch('../live2d/model/postures/bounds.json')).json();window.pet={modelBundle:async()=>({postures:{url:new URL('../live2d/model/postures/GPTDragon-postures.model3.json',location.href).href,bounds:metadata}})};
+ const front=await PIXI.live2d.Live2DModel.from('../live2d/model/GPTDragon.model3.json',{autoInteract:false,autoUpdate:false});app.stage.addChild(front);front.pivot.set(512,1419);front.scale.set(600/1024);front.position.set(320,920);
+ const metadata=await (await fetch('../live2d/model/postures-repair/bounds.json')).json();window.pet={modelBundle:async()=>({postures:{url:new URL('../live2d/model/postures-repair/GPTDragon-postures.model3.json',location.href).href,bounds:metadata}})};
  const views=new PetPostures.Views(app,front,null),loaded=await views.load();views.model.position.y=920;
- const core=views.model.internalModel.coreModel,ppu=core.getModel().canvasinfo.PixelsPerUnit,results={};
- for(let i=0;i<5;i++){
-  views.controller.position=i+1;views.update(0,{mode:i===1?'crouch':'sleep'});front.alpha=0;
-  await new Promise(resolve=>setTimeout(resolve,80));app.renderer.render(app.stage);
+ const core=views.model.internalModel.coreModel,ppu=core.getModel().canvasinfo.PixelsPerUnit,results={},count=metadata.poses.length,parameterIds=Array.from(core.getModel().parameters.ids);
+ if(new Set(parameterIds).size!==parameterIds.length||!parameterIds.includes('ParamTransition'))throw new Error('Transition parameter identity lost in native export: '+parameterIds);
+ const draw=()=>app.renderer.render(app.stage),opacities=()=>Array.from({length:count},(_,k)=>core.getDrawableOpacity(k));
+ const capture=async name=>{draw();await window.poseTest.capture({name,png:app.view.toDataURL('image/png')});};
+ for(let i=0;i<count;i++){
+  views.controller.position=i+1;views.update(0,{mode:'sleep'});PetModelClock.advance(views.model,1/60);front.alpha=0;draw();
   const pixels=app.renderer.extract.pixels();let visible=0;for(let k=3;k<pixels.length;k+=4)if(pixels[k]>10)visible++;
-  const opacities=Array.from({length:5},(_,k)=>core.getDrawableOpacity(k));
-  await window.poseTest.capture({name:metadata.poses[i].id,png:app.view.toDataURL('image/png')});results[metadata.poses[i].id]={visible,opacities};
+  results[metadata.poses[i].id]={visible,opacities:opacities()};await capture(metadata.poses[i].id);
  }
- let minY=Infinity,maxY=-Infinity;views.controller.position=5;let t=0;
- const sample=()=>{views.update(1/60,{mode:'sleep'});front.alpha=0;t++;const v=core.getDrawableVertices(4);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);};
- await new Promise(resolve=>{const tick=()=>{sample();if(t>=180){app.ticker.remove(tick);resolve();}};app.ticker.add(tick);});
+ let minY=Infinity,maxY=-Infinity;views.controller.position=count;let t=0;
+ await new Promise(resolve=>{const tick=()=>{views.update(1/60,{mode:'sleep'});const v=core.getDrawableVertices(count-1);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);if(++t>=180){app.ticker.remove(tick);resolve();}};app.ticker.add(tick);});
  const breathMotion=(maxY-minY)*ppu;
- views.controller=new PetPostures.Controller();
+ // Verify the actual exported deformation, rather than just counting forms.
+ core.setParameterValueById('ParamPose',3);core.setParameterValueById('ParamPostureBreath',1);core.setParameterValueById('ParamTransition',0);core.update();const rest=Array.from({length:count},(_,i)=>Float32Array.from(core.getDrawableVertices(i)));
+ core.setParameterValueById('ParamTransition',1);core.update();const transitionByMesh={};let transitionMotion=0;for(let i=0;i<count;i++){const bent=core.getDrawableVertices(i);let delta=0;for(let k=0;k<rest[i].length;k+=2)delta=Math.max(delta,Math.hypot(rest[i][k]-bent[k],rest[i][k+1]-bent[k+1])*ppu);transitionByMesh[core.getDrawableIds()[i]]=delta;transitionMotion=Math.max(transitionMotion,delta);}
+ if(transitionMotion<80)throw new Error('Native transition must deform the character: '+JSON.stringify({transitionByMesh,parameterIds,values:Array.from(core.getModel().parameters.values)}));
+ // Preparation lowers the torso while the standing soles stay on the ground.
+ const frontCore=front.internalModel.coreModel,frontPpu=frontCore.getModel().canvasinfo.PixelsPerUnit;
+ frontCore.setParameterValueById('ParamCrouchPrepare',0);frontCore.update();
+ const feet=[...frontCore.getDrawableIds()].map((id,i)=>({id,i})).filter(o=>['ArtMesh6','ArtMesh7'].includes(o.id)).map(o=>({...o,vertices:Float32Array.from(frontCore.getDrawableVertices(o.i))}));
+ frontCore.setParameterValueById('ParamCrouchPrepare',1);frontCore.update();let preparationFootDrift=0;
+ for(const foot of feet){const v=frontCore.getDrawableVertices(foot.i);for(let k=0;k<v.length;k+=2)preparationFootDrift=Math.max(preparationFootDrift,Math.hypot(v[k]-foot.vertices[k],v[k+1]-foot.vertices[k+1])*frontPpu);}
+ if(feet.length!==2||preparationFootDrift>1)throw new Error('Standing feet must remain grounded during preparation: '+preparationFootDrift);
+ frontCore.setParameterValueById('ParamCrouchPrepare',0);frontCore.update();
+ views.controller=new PetPostures.Controller(count);
  const stream=app.view.captureStream(60),recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:1800000}),chunks=[];recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};recorder.start();
- let n=0,minimumSleepHitY=0;const visits=new Set();
- await new Promise(resolve=>{const tick=()=>{const s=n/60,mode=s<4?'crouch':s<10?'sleep':s<15?'wake':s<18?'crouch':'idle';front.alpha=1;views.update(1/60,{mode});visits.add(Math.round(views.frame.progress));if(s>8&&s<10)minimumSleepHitY=views.bounds().y;if(n===895)window.poseTest.capture({name:'standing',png:app.view.toDataURL('image/png')});if(++n>=1260){app.ticker.remove(tick);resolve();}};app.ticker.add(tick);});
+ let n=0,minimumSleepHitY=0,overlapFrames=0,invalidVertexFrames=0,lastSelected=0;const visits=new Set(),handoffs=[];
+ await new Promise(resolve=>{const tick=()=>{
+  const s=n/60,mode=s<4?'crouch':s<10?'sleep':s<15?'wake':s<18?'crouch':'idle';
+  front.alpha=1;views.update(1/60,{mode});PetModelClock.advance(front,1/60);
+  const f=views.frame;visits.add(f.selected);
+  const visible=opacities().filter(v=>v>.0001).length;
+  if((front.alpha>0?1:0)+(views.model.alpha>0?visible:0)!==1)overlapFrames++;
+  for(let i=0;i<count;i++)if(!Array.from(core.getDrawableVertices(i)).every(Number.isFinite))invalidVertexFrames++;
+  if(f.selected!==lastSelected){handoffs.push({frame:n,mode,from:lastSelected,to:f.selected,morph:f.morph});window.poseTest.capture({name:'handoff-'+n+'-before',png:app.view.toDataURL('image/png')});capture('handoff-'+n);lastSelected=f.selected;}
+  if(s>8&&s<10)minimumSleepHitY=views.bounds().y;
+  if(n===899)capture('standing');
+  if(++n>=1260){app.ticker.remove(tick);resolve();}
+ };app.ticker.add(tick);});
  await new Promise(resolve=>{recorder.onstop=resolve;recorder.stop();});stream.getTracks().forEach(t=>t.stop());const videoBytes=await window.poseTest.video(await new Blob(chunks,{type:'video/webm'}).arrayBuffer());
- const ok=loaded.ready&&core.getDrawableCount()===5&&core.getParameterCount()===3&&Object.values(results).every((r,i)=>r.visible>50000&&r.opacities.every((v,k)=>Math.abs(v-(i===k?1:0))<.01))&&breathMotion>.5&&visits.size===6&&views.frame.progress===0&&minimumSleepHitY>500&&videoBytes>100000;
- await window.poseTest.result({ok,loaded,drawableCount:core.getDrawableCount(),parameterCount:core.getParameterCount(),results,breathMotion,minimumSleepHitY,visits:[...visits],frames:n,videoBytes});
+ const ok=loaded.ready&&count===7&&core.getDrawableCount()===count&&core.getParameterCount()===4&&Object.values(results).every((r,i)=>r.visible>50000&&r.opacities.every((v,k)=>Math.abs(v-(i===k?1:0))<.01))&&breathMotion>.5&&visits.size===count+1&&views.frame.progress===0&&minimumSleepHitY>500&&overlapFrames===0&&invalidVertexFrames===0&&videoBytes>100000;
+ await window.poseTest.result({ok,loaded,drawableCount:core.getDrawableCount(),parameterCount:core.getParameterCount(),parameterIds,results,breathMotion,transitionMotion,preparationFootDrift,minimumSleepHitY,overlapFrames,invalidVertexFrames,handoffs,visits:[...visits],frames:n,videoBytes});
 }catch(e){await window.poseTest.result({ok:false,error:e.stack});}})();
 </script>

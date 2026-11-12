@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#eae5ef}canvas{display:block}</style><body>
+<script src="../live2d/runtime/vendor/live2dcubismcore.min.js"></script><script src="../live2d/runtime/node_modules/pixi.js/dist/browser/pixi.min.js"></script><script src="../live2d/runtime/node_modules/pixi-live2d-display/dist/cubism4.min.js"></script>
+<script>(async()=>{try{
+ const app=new PIXI.Application({width:640,height:940,backgroundColor:0xeae5ef,antialias:true,preserveDrawingBuffer:true});document.body.appendChild(app.view);
+ const m=await PIXI.live2d.Live2DModel.from('../live2d/model/GPTDragon.model3.json',{autoInteract:false,autoUpdate:false});app.stage.addChild(m);m.pivot.set(512,1419);m.scale.set(600/1024);m.position.set(320,920);
+ const core=m.internalModel.coreModel,defaults=Array.from({length:core.getParameterCount()},(_,i)=>core.getParameterDefaultValue(i));
+ const samples=[['neutral',{}],['head-left',{ParamAngleX:-12}],['head-right',{ParamAngleX:12}],['body-left',{ParamBodyAngleX:-8,ParamBodyAngleZ:-4}],['body-right',{ParamBodyAngleX:8,ParamBodyAngleZ:4}],['wave-start',{ParamRotation_armRight:-20,ParamRotation_rightElbow:-30}],['wave-peak',{ParamRotation_armRight:-24,ParamRotation_rightElbow:-65}],['stretch',{ParamRotation_armLeft:22,ParamRotation_armRight:-22,ParamRotation_leftElbow:55,ParamRotation_rightElbow:-55}],['breath',{ParamBreath:1}]];
+ for(const [name,params] of samples){for(let i=0;i<defaults.length;i++)core.setParameterValueByIndex(i,defaults[i]);for(const [id,v] of Object.entries(params))core.setParameterValueById(id,v);core.update();app.renderer.render(app.stage);
+  const ids=core.getDrawableIds(),ppu=core.getModel().canvasinfo.PixelsPerUnit,shapes={};for(const i of [8,9,10,14,15])shapes[ids[i]]=Array.from(core.getDrawableVertices(i),v=>v*ppu);
+  await window.frontReview.capture({name,png:app.view.toDataURL('image/png'),info:{parameters:params,shapes}});
+ }
+ await window.frontReview.done({ok:true,samples:samples.map(s=>s[0])});
+}catch(e){await window.frontReview.done({ok:false,error:e.stack});}})();</script>

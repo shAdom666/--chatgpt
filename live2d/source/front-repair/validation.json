@@ -1,0 +1,36 @@
+{
+  "status": "v1.1-release-validation",
+  "verifiedAt": "2026-11-12T11:46:45.070Z",
+  "officialEditor": "Cubism Editor 5.3.04",
+  "front": {
+    "meshes": 34,
+    "parameters": 39,
+    "renderedActionStates": 12,
+    "frames": 2877
+  },
+  "postures": {
+    "meshes": 7,
+    "parameters": 4,
+    "frames": 1260,
+    "overlapFrames": 0,
+    "invalidVertexFrames": 0,
+    "preparationFootDriftPixels": 0,
+    "nativeTransitionMotionPixels": 177.83949348615647
+  },
+  "portable": {
+    "ok": true,
+    "files": 123,
+    "packageSha256": "3626edb2bf6bc005742342fb2fd80da7321ef344b21d6b7fae957f049ac6e301",
+    "multiview": true,
+    "placement": true,
+    "apiCalls": 0
+  },
+  "nativeModels": {
+    "live2d/model/front-repair/GPTDragon-front.moc3": "14a5c24e1840bc16de1873ccd01f6e147d864fa9bd0d741bc79906478315f468",
+    "live2d/model/postures-repair/GPTDragon-postures.moc3": "3d37ac8b1c12287ed90df14ca218026a514b551f17af44a3ce401d6ee67fde94"
+  },
+  "limitations": [
+    "Key-pose handoffs still switch some clothing details; lying poses are not fully articulated joint-by-joint."
+  ],
+  "packagedAt": "2026-11-12T12:04:48.210Z"
+}

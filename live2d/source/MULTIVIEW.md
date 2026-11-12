@@ -1,4 +1,18 @@
-# v1.05 多视角与姿势素材
+# 多视角与姿势素材
+
+## v1.1 正面对齐、手臂与起卧修复
+
+当前运行入口已改为 `../model/front-repair/GPTDragon-front.moc3` 与 `../model/postures-repair/GPTDragon-postures.model3.json`。旧 v1.05 文件保留用于比较；以下旧版说明描述的是发布时的实现。
+
+正面修复工程包含 34 个网格、39 个参数，新增手腕和站姿下蹲准备参数。颈部与衣服共用躯干旋转；衣领、腰线接触点固定，裙内衬位于腿后方。双臂各有 9 个肘角 × 3 个手腕角的原生网格形变，运行时手臂动作拥有唯一控制来源。
+
+新姿态顺序：半蹲、深蹲、手掌撑地、侧坐、肘部支撑、侧撑、侧躺蜷睡。`ParamPose` 只接收整数，`ParamTransition` 驱动相邻姿态的原生变形，`ParamPostureBreath` 保留呼吸。站姿由 `ParamCrouchPrepare` 向首个姿态的交接位置变形。整角色透明度始终为 0 或 1，起身时逆序经过支撑姿态；这消除了整角色交叉混合造成的双重轮廓。关键姿态的服装细节仍会在交接处切换，未实现卧姿全部关节独立控制。
+
+新增原始图保存在 `front-repair/*-raw.png`、`postures/reach.png`、`postures/elbow.png`。正面沿用原角色材质，并补绘无头发碎片的独立手臂、无肢体残留的前裙与完整内衬；素材通过会话内置 imagegen 按原角色参考生成，再做机械配准。`front-repair/registration.json` 记录源图和配准目标；`postures/transitions.json` 记录顺序与脸部定位。地面统一为 y=1400。
+
+当前 CMO3 均已由官方编辑器保存并导出，保留编辑用直通透明度。重新导出后分别运行 `premultiply-export.mjs` 处理两个修复模型的 model3 文件，再运行 `activate-front-repair.mjs` 重新生成主入口及过滤后的服装物理设置。不要用草稿生成器覆盖这些已保存的 CMO3。
+
+验证：`front-rig-authoring.cjs` 检查原生引用、父部件归属和静态滤镜标识；`posture-motion.cjs` 检查动作中断和网格无翻折；`posture-render.cjs` 逐帧检查显示互斥、有效顶点、呼吸、脚底定位及完整起卧循环。已通过 1260 帧起卧检查（重叠帧 0、无效顶点帧 0、准备动作脚底位移 0）、12 种正面动作录制，以及便携包解压后的动作队列与桌面定位检查。当前预览在 `../preview/posture-cycle.webm` 和 `../preview/natural-actions.webm`。v1.1 便携包使用 `powershell -File build-installer.ps1 -PortableOnly` 构建；`-FixPreview` 可另外生成本地预览包。
 
 保留原项目白紫色 Q 版龙娘设定、长卷发、弯角、玫瑰与菱形流苏、紫色眼睛及分层裙装。新增素材由本次会话的内置 imagegen 根据原模型预览生成，继承原角色素材的署名和使用范围，见 assets/NOTICE.md。
 
