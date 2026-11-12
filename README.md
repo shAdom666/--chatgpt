@@ -41,7 +41,7 @@ Windows 白紫色 Q 版龙娘桌宠，使用真实 Live2D Cubism 模型，可连
 
 ```powershell
 git clone https://github.com/shAdom666/--chatgpt.git
-cd --chatgpt
+Set-Location -LiteralPath '.\--chatgpt'
 git lfs install
 git lfs pull
 npm ci --prefix live2d/runtime

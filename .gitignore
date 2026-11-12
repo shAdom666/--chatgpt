@@ -32,6 +32,7 @@ tests/natural-source.xml
 _build/
 dist/
 tools/InnoSetup/
+tools/GitHubCLI/
 
 # Local session data, credentials and editor caches
 .codex-attachments/
