@@ -5,7 +5,7 @@
 本机编译器来自 Inno Setup 官方 7.1.1 x64 安装程序，验证发布者 Pyrsys B.V. 的有效签名后，以 `/PORTABLE=1` 解包在项目 tools 中。
 
 构建脚本从明确文件清单创建新的 `_build` 暂存目录，仅复制当前运行模型、运行程序、离线依赖和许可证。
-`dist/GPTDragonPet-Setup-1.1-x64.exe` 为单文件安装包，旁边提供 SHA-256 和构建报告。
+`dist/GPTDragonPet-Setup-2.0-x64.exe` 为单文件安装包，旁边提供 SHA-256 和构建报告。
 没有附加代码签名证书。
 
 安装使用当前用户权限，默认位置 `%LOCALAPPDATA%\Programs\GPTDragonPet`，含桌面与开始菜单快捷方式、Windows 卸载登记及卸载程序。

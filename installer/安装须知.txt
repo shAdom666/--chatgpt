@@ -1,6 +1,6 @@
-﻿龙娘桌宠 Live2D
+﻿龙娘桌宠 3D v2.0
 
-本安装包包含当前白紫色龙娘模型、全身动作和 GPT 连接组件，以及 Electron 和 Live2D 运行环境。
+本安装包包含当前白紫色龙娘模型、全身动作和 GPT 连接组件，以及 Electron、Three.js 和 Live2D 运行环境。
 支持 Windows 10（2004 或更新版本）、Windows 11 的 64 位环境，需要 .NET Framework 4.8 或更新版本。
 使用桌宠不需要安装 Cubism 编辑器或 Node.js。
 

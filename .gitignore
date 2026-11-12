@@ -73,3 +73,5 @@ tests/sideview-render.json
 tests/posture-render.json
 tests/live2d-multiview.json
 live2d/model/sideviews/*.repaired.cmo3
+
+live2d/runtime/dragon3d/node_modules/

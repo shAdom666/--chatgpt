@@ -1,0 +1,15 @@
+{
+  "name": "dragon3d",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "esbuild pet.mjs --bundle --minify --legal-comments=eof --outfile=avatar.js"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "private": true
+}

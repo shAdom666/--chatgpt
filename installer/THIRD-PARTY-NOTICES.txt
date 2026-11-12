@@ -1,4 +1,7 @@
-龙娘桌宠 Live2D — 第三方组件说明
+﻿龙娘桌宠 3D — 第三方组件说明
+
+Three.js (MIT)
+live2d/runtime/dragon3d/THREE-LICENSE.txt
 
 Electron / Chromium: MIT 及 Chromium 第三方许可，见
 live2d/runtime/node_modules/electron/dist/LICENSE

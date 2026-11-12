@@ -1,25 +1,20 @@
-# 龙娘桌宠 Live2D
+# 龙娘桌宠 3D
 
-Windows 白紫色 Q 版龙娘桌宠，使用真实 Live2D Cubism 模型，可连接 OpenAI API 进行文字聊天。
+Windows 白紫色 Q 版龙娘桌宠，使用 Three.js 渲染立体角色，可连接 OpenAI API 进行文字聊天。
 
-![角色预览](live2d/preview/idle.png)
+![角色预览](dragon3d/preview.png)
 
 ## 功能
 
-- 正面模型：34 个绘制网格、39 个模型参数和 4096×4096 纹理图集。
-- 左右独立侧身模型：各 7 个网格、8 个参数；侧身走路、距离同步步频、减速后转向。
-- 半蹲、深蹲、手掌撑地、侧坐、肘部支撑、侧撑、侧躺蜷睡及起身；切换时只显示一个角色，蜷睡带轻微呼吸起伏。
-- 膝盖屈伸、手臂关节、身体重心、翅膀、尾巴，以及头发和衣裙物理。
-- 待机、走路、招手、开心、小跳、睡觉、醒来、伸懒腰、张望、点头、摊手与整理裙摆。
+- 侧身行走、平滑转向和掌心朝前的招手。
+- 蹲下、侧躺蜷睡与起身支持中途反向，衣裙沿小腿和鞋面垂落。
 - 沿桌面底边自由走动，拖动后平滑落地，也可关闭贴底自由摆放。
 - 托盘和角色右键菜单，支持置顶、窗口大小调整及返回右下角。
 - GPT 聊天、模型名称配置和回复取消；密钥使用 Windows DPAPI 在本机加密。
 
-动作由运行程序实时驱动 Cubism 参数，并使用逐关节弹簧平滑衔接；当前没有另存为独立 `.motion3.json` 动作文件。
-
 ## 安装使用
 
-当前版本为 **v1.1**（程序内部版本号 `1.1.0`）。从 [v1.1 下载页](https://github.com/shAdom666/--chatgpt/releases/tag/v1.1) 下载 `GPTDragonPet-1.1-portable-x64.zip`，完整解压后双击 `GPTPet.exe`。运行包自带 Electron 和模型，不需要安装 Cubism 或 Node.js。改动见 [CHANGELOG.md](CHANGELOG.md)。
+当前版本为 **v2.0**。在 [GitHub 发布页](https://github.com/shAdom666/--chatgpt/releases/tag/v2.0) 下载 `GPTDragonPet-2.0-portable-x64.zip`，完整解压后双击 `GPTPet.exe`。运行包自带 Electron、Three.js 和模型。改动见 [CHANGELOG.md](CHANGELOG.md)。
 
 目标环境为 Windows 10 2004+/Windows 11 的 x64 兼容系统，需 .NET Framework 4.8 或更新版本。便携版可解压到自己选择的文件夹；退出程序后删除该文件夹即可移除。此前的安装版仍可通过 Windows“已安装的应用”卸载。更新保留本机 GPT 连接设置，没有设置开机自启。
 
@@ -80,7 +75,9 @@ node tests/natural-showcase.cjs
 
 ## 编辑模型
 
-- 当前正面工程：`live2d/model/front-repair/GPTDragon-front.cmo3`，起卧工程：`live2d/model/postures-repair/GPTDragon-postures.cmo3`，均通过 Git LFS 保存。原版 `GPTDragon.natural.cmo3` 保留作历史参考。
+3D 角色使用 [Blender 工程](dragon3d/Dragon.blend)。模型生成、动作编辑和重新导出见 [3D 工程说明](dragon3d/README.md)。以下为 Live2D 工程的编辑方法。
+
+- Live2D 正面工程：`live2d/model/front-repair/GPTDragon-front.cmo3`，起卧工程：`live2d/model/postures-repair/GPTDragon-postures.cmo3`，均通过 Git LFS 保存。原版 `GPTDragon.natural.cmo3` 保留作历史参考。
 - 分层 PSD：`live2d/source/GPTDragon.layers.psd`。
 - 图层、底图及拆分数据：`live2d/source/`。
 - 运行入口：`live2d/model/GPTDragon.model3.json`。
@@ -128,6 +125,7 @@ powershell -NoProfile -File build-installer.ps1 -CompilerPath "你的 Inno Setup
 
 - [StretchyStudio](https://github.com/MangoLion/stretchystudio)：MIT，工程生成参考，许可随仓库保留。
 - PixiJS 与 Pixi Live2D Display：MIT。
+- Three.js：MIT。
 - Electron：MIT，Chromium 及其他组件保留各自许可。
 - Live2D Cubism Core：遵循 Live2D 专有软件许可，副本位于 `installer/licenses/`，运行文件保留版权声明。
 

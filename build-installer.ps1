@@ -22,7 +22,7 @@ Copy-Payload 'live2d\model\StretchyStudio-LICENSE.txt' 'licenses\StretchyStudio-
 Copy-Payload 'live2d\runtime\node_modules\pixi.js\LICENSE' 'licenses\PixiJS-LICENSE.txt'
 Copy-Payload 'live2d\runtime\node_modules\pixi-live2d-display\LICENSE' 'licenses\Pixi-Live2D-Display-LICENSE.txt'
 Copy-Payload 'installer\licenses\Live2D-proprietary-software-license.html' 'licenses\Live2D-proprietary-software-license.html'
-$runtimeFiles=@('main.cjs','preload.cjs','desktop.cjs','walker.cjs','motions.js','model-clock.js','side-motion.js','sideviews.js','postures.js','rig-audit.js','pet.js','pet.html','chat.html','chat.css','chat.js','package.json')
+$runtimeFiles=@('dragon3d.html','dragon3d\avatar.js','dragon3d\THREE-LICENSE.txt','main.cjs','preload.cjs','desktop.cjs','walker.cjs','motions.js','model-clock.js','side-motion.js','sideviews.js','postures.js','rig-audit.js','pet.js','pet.html','chat.html','chat.css','chat.js','package.json')
 foreach($file in $runtimeFiles){Copy-Payload ('live2d\runtime\'+$file) ('live2d\runtime\'+$file)}
 foreach($file in @('vendor\live2dcubismcore.min.js','node_modules\pixi.js\dist\browser\pixi.min.js','node_modules\pixi-live2d-display\dist\cubism4.min.js')){
   Copy-Payload ('live2d\runtime\'+$file) ('live2d\runtime\'+$file)
@@ -32,6 +32,7 @@ $electronTarget=Join-Path $payloadRoot 'live2d\runtime\node_modules\electron\dis
 New-Item -ItemType Directory -Path $electronTarget -Force | Out-Null
 Get-ChildItem -LiteralPath $electronSource -File | Where-Object {$_.Extension -ne '.log'} | ForEach-Object {Copy-Item -LiteralPath $_.FullName -Destination $electronTarget}
 foreach($folder in @('locales','resources')){Copy-Item -LiteralPath (Join-Path $electronSource $folder) -Destination (Join-Path $electronTarget $folder) -Recurse}
+Copy-Payload 'live2d\model\dragon3d\Dragon.glb' 'live2d\model\dragon3d\Dragon.glb'
 $manifest=Get-Content -LiteralPath (Join-Path $projectRoot 'live2d\model\GPTDragon.model3.json') -Raw | ConvertFrom-Json
 Copy-Payload 'live2d\model\GPTDragon.model3.json' 'live2d\model\GPTDragon.model3.json'
 $modelFiles=@($manifest.FileReferences.Moc,$manifest.FileReferences.Physics,$manifest.FileReferences.DisplayInfo,$manifest.FileReferences.UserData)+@($manifest.FileReferences.Textures)
@@ -75,7 +76,7 @@ $inventory=@(Get-ChildItem -LiteralPath $payloadRoot -Recurse -File | ForEach-Ob
 })
 $inventory | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $payloadRoot 'package-manifest.json') -Encoding utf8
 if($PortableOnly){
-  $portableName=if($FixPreview){'GPTDragonPet-front-posture-fix-preview-x64.zip'}else{'GPTDragonPet-1.1-portable-x64.zip'}
+  $portableName=if($FixPreview){'GPTDragonPet-3D-wave-profile-preview-x64.zip'}else{'GPTDragonPet-2.0-portable-x64.zip'}
   $portablePath=Join-Path $outputRoot $portableName
   Compress-Archive -LiteralPath (Get-ChildItem -LiteralPath $payloadRoot | ForEach-Object {$_.FullName}) -DestinationPath $portablePath -Force
   $portableHash=(Get-FileHash -LiteralPath $portablePath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -86,7 +87,7 @@ if($PortableOnly){
 }
 & $CompilerPath ('/DPayloadDir='+$payloadRoot) ('/DOutputFolder='+$outputRoot) (Join-Path $projectRoot 'installer\GPTDragonPet.iss')
 if($LASTEXITCODE -ne 0){throw 'Installer compiler failed'}
-$installerPath=Join-Path $outputRoot 'GPTDragonPet-Setup-1.1-x64.exe'
+$installerPath=Join-Path $outputRoot 'GPTDragonPet-Setup-2.0-x64.exe'
 $packageHash=(Get-FileHash -LiteralPath $installerPath -Algorithm SHA256).Hash.ToLowerInvariant()
 ($packageHash+'  '+[IO.Path]::GetFileName($installerPath)) | Set-Content -LiteralPath ($installerPath+'.sha256') -Encoding ascii
 $unpackedBytes=0L

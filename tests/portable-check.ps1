@@ -1,4 +1,4 @@
-﻿param([string]$PackagePath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-1.1-portable-x64.zip'))
+﻿param([string]$PackagePath=(Join-Path $PSScriptRoot '..\dist\GPTDragonPet-2.0-portable-x64.zip'))
 $ErrorActionPreference='Stop'
 $projectRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $packageFile=(Resolve-Path -LiteralPath $PackagePath).Path
@@ -15,7 +15,7 @@ New-Item -ItemType Directory -Path (Join-Path $checkRoot 'tests') | Out-Null
 $electronExe=Join-Path $checkRoot 'live2d\runtime\node_modules\electron\dist\electron.exe'
 $runtimePath=Join-Path $checkRoot 'live2d\runtime'
 $env:ELECTRON_RUN_AS_NODE=$null
-foreach($mode in @('multiview','placement')){
+foreach($mode in @('dragon','multiview','placement')){
  $info=New-Object Diagnostics.ProcessStartInfo
  $info.FileName=$electronExe
  $info.Arguments='"'+$runtimePath+'" --'+$mode+'-check'
@@ -29,5 +29,5 @@ foreach($mode in @('multiview','placement')){
  $result=Get-Content -LiteralPath (Join-Path $checkRoot ('tests\live2d-'+$mode+'.json')) -Raw | ConvertFrom-Json
  if(-not $result.ok){throw ('Packaged '+$mode+' report failed')}
 }
-[ordered]@{ok=$true;files=@($inventory).Count;packageSha256=(Get-FileHash -LiteralPath $packageFile -Algorithm SHA256).Hash.ToLowerInvariant();multiview=$true;placement=$true;apiCalls=0} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $projectRoot 'dist\portable-check.json') -Encoding utf8
+[ordered]@{ok=$true;files=@($inventory).Count;packageSha256=(Get-FileHash -LiteralPath $packageFile -Algorithm SHA256).Hash.ToLowerInvariant();dragon=$true;multiview=$true;placement=$true;apiCalls=0} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $projectRoot 'dist\portable-check.json') -Encoding utf8
 Write-Output ('PASS portable package: '+@($inventory).Count+' file hashes, native models, action queue and desktop placement')

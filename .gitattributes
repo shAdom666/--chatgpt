@@ -16,3 +16,4 @@
 *.psd binary
 *.webm binary
 *.cmo3 filter=lfs diff=lfs merge=lfs -text
+live2d/runtime/dragon3d/avatar.js linguist-generated=true -whitespace

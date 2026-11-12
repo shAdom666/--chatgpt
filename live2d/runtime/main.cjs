@@ -14,7 +14,10 @@ const animationCheck=showcaseCheck||process.argv.includes('--animation-check');
 const rigCheck=process.argv.includes('--rig-check');
 const placementCheck=process.argv.includes('--placement-check');
 const multiviewCheck=process.argv.includes('--multiview-check');
-const verifyMode=engineCheck||animationCheck||rigCheck||placementCheck||multiviewCheck||process.argv.includes('--model-check');
+const dragonCheck=process.argv.includes('--dragon-check');
+const verifyMode=dragonCheck||engineCheck||animationCheck||rigCheck||placementCheck||multiviewCheck||process.argv.includes('--model-check');
+const dragon3d=dragonCheck||(!verifyMode&&!process.argv.includes('--live2d'));
+if(dragon3d&&!verifyMode)app.setPath('userData',path.join(app.getPath('userData'),'dragon-preview'));
 if(verifyMode)app.setPath('userData',path.join(app.getPath('userData'),'validation'));
 const modelFolder=path.join(root,engineCheck?'live2d/validation/Hiyori':'live2d/model');
 protocol.registerSchemesAsPrivileged([{scheme:'pet',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
@@ -37,7 +40,7 @@ function safeWindow(file,options){
 }
 function sendState(){if(petWindow&&!petWindow.isDestroyed())petWindow.webContents.send('pet:state',{mode:menuOpen&&mode==='walk'?'idle':mode,direction,walking,token:actionToken});}
 function act(value,duration){
- if(!['sleep','crouch','wake'].includes(value)&&(['sleep','crouch'].includes(mode)||(mode==='wake'&&queuedAction))){queuedAction={value,duration};if(mode==='wake')return;value='wake';duration=4800;}else queuedAction=null;
+ if(!['sleep','crouch','wake'].includes(value)&&(['sleep','crouch'].includes(mode)||(mode==='wake'&&(queuedAction||!postureStanding)))){queuedAction={value,duration};if(mode==='wake')return;value='wake';duration=4800;}else queuedAction=null;
  mode=value;actionToken++;actionStarted=Date.now();modeUntil=actionStarted+(duration??((catalog[value]?.duration||3)*1000));walkUntil=0;nextWalk=modeUntil+10000+Math.random()*12000;nextGesture=modeUntil+12000+Math.random()*16000;sendState();
 }
 function stopGait(){v=vRate=0;gait={heading:0,stage:'idle',turnAge:0};if(petWindow&&!petWindow.isDestroyed())petWindow.webContents.send('pet:gaze',{x:0,y:0,speed:0,distance:walkDistance/(petSize.width/320),heading:0,stage:'idle'});}
@@ -48,7 +51,7 @@ function home(){if(!petWindow)return;const a=screen.getPrimaryDisplay().workArea
 function finishDrag(){if(!petWindow)return 0;const moved=drag?.moved||0;drag=null;const b=petWindow.getBounds();x=b.x;y=b.y;stopGait();nextWalk=Date.now()+8000;return moved;}
 function showChat(settings=false){
  if(!chatWindow||chatWindow.isDestroyed()){
-  chatWindow=safeWindow('chat.html',{title:'和 ChatGPT 娘聊聊 · Live2D',width:460,height:660,minWidth:380,minHeight:480,backgroundColor:'#f9f7fd',icon:path.join(root,'assets/pet.ico')});
+  chatWindow=safeWindow('chat.html',{title:'和 ChatGPT 娘聊聊',width:460,height:660,minWidth:380,minHeight:480,backgroundColor:'#f9f7fd',icon:path.join(root,'assets/pet.ico')});
   chatWindow.once('ready-to-show',()=>{if(chatWindow.isMinimized())chatWindow.restore();chatWindow.show();chatWindow.focus();});
   if(settings)chatWindow.webContents.once('did-finish-load',()=>chatWindow.webContents.send('chat:settings'));
  }else{chatWindow.show();chatWindow.focus();if(settings)chatWindow.webContents.send('chat:settings');}
@@ -73,7 +76,7 @@ async function start(){
    return net.fetch(pathToFileURL(file).toString());
   }catch{return new Response('',{status:400});}
  });
- petWindow=safeWindow('pet.html',{title:'ChatGPT 娘 · Live2D',...petSize,frame:preview,transparent:!preview,alwaysOnTop:!verifyMode,show:!verifyMode,skipTaskbar:!process.argv.includes('--diagnostics'),resizable:false,hasShadow:false,backgroundColor:preview?'#f3eef8':'#00000000',icon:path.join(root,'assets/pet.ico')});
+ petWindow=safeWindow(dragon3d?'dragon3d.html':'pet.html',{title:dragon3d?'龙娘桌宠 · 3D':'ChatGPT 娘 · Live2D',...petSize,frame:preview,transparent:!preview,alwaysOnTop:!verifyMode,show:!verifyMode,skipTaskbar:!process.argv.includes('--diagnostics'),resizable:false,hasShadow:false,backgroundColor:preview?'#f3eef8':'#00000000',icon:path.join(root,'assets/pet.ico')});
  home();
  if(placementCheck)setTimeout(()=>{
   const dimensions=[];for(let i=0;i<240;i++){movePet(x+(i%2),y);const b=petWindow.getBounds();dimensions.push([b.width,b.height]);}
@@ -125,7 +128,7 @@ async function start(){
   {label:'大小',submenu:[240,320,400].map(width=>({label:width+' 像素',click:()=>{petSize.width=width;petSize.height=Math.round(width*1.47);home();}}))},
   {type:'separator'},{label:'退出',click:()=>app.quit()}
  ]);
- tray=new Tray(path.join(root,'assets/pet.ico'));tray.setToolTip('ChatGPT 娘 · 真正 Live2D');tray.on('right-click',()=>tray.popUpContextMenu(menu()));tray.on('double-click',()=>showChat());
+ tray=new Tray(path.join(root,'assets/pet.ico'));tray.setToolTip(dragon3d?'龙娘桌宠 · 3D':'ChatGPT 娘 · Live2D');tray.on('right-click',()=>tray.popUpContextMenu(menu()));tray.on('double-click',()=>showChat());
  ipcMain.handle('pet:action',(e,name)=>{if(!senderAllowed(e))return; if(name==='menu'){menuOpen=true;sendState();menu().popup({window:petWindow,callback:()=>{menuOpen=false;sendState();}});return;}if(name==='chat')showChat();else if(name==='settings')showChat(true);});
  ipcMain.on('pet:drag-start',e=>{if(e.sender!==petWindow.webContents)return;const p=screen.getCursorScreenPoint(),b=petWindow.getBounds();if(mode==='walk')mode='idle';walkUntil=0;stopGait();sendState();drag={x:p.x,y:p.y,windowX:b.x,windowY:b.y,moved:0};petWindow.setIgnoreMouseEvents(false);});
  ipcMain.handle('pet:drag-end',e=>{if(e.sender!==petWindow.webContents||!drag)return false;return finishDrag()<5;});
@@ -133,7 +136,13 @@ async function start(){
  ipcMain.on('pet:posture-status',(e,value)=>{if(e.sender===petWindow.webContents&&typeof value==='boolean')postureStanding=value;});
  petWindow.on('blur',()=>{if(drag)finishDrag();});
  ipcMain.on('pet:click-through',(e,enabled)=>{if(e.sender===petWindow.webContents&&!drag)petWindow.setIgnoreMouseEvents(enabled,{forward:true});});
- ipcMain.on('pet:ready',(e,info)=>{if(e.sender!==petWindow.webContents)return;modelDiagnostics=info;if(!verifyMode&&!petWindow.isVisible()&&(info.loaded||!info.ok)){home();petWindow.showInactive();}if(process.argv.includes('--diagnostics')||verifyMode)fs.writeFileSync(path.join(root,engineCheck?'tests/live2d-engine.json':showcaseCheck?'tests/live2d-showcase.json':animationCheck?'tests/live2d-animation.json':'tests/live2d-runtime.json'),JSON.stringify(info,null,2));sendState();if(multiviewCheck&&info.loaded&&!multiviewStarted){multiviewStarted=true;validateMultiview();}if(verifyMode&&!multiviewCheck&&(!info.ok||info.seconds))app.exit(info.ok&&info.vertexMotionVerified&&info.render?.visiblePixels>5000?0:1);});
+ ipcMain.on('pet:ready',(e,info)=>{if(e.sender!==petWindow.webContents)return;modelDiagnostics=info;
+  if(dragonCheck){
+   if(!info.ok){console.error(info.error);app.exit(1);return;}
+   if(info.loaded&&!multiviewStarted){multiviewStarted=true;validateDragon(info);}
+   return;
+  }
+  if(!verifyMode&&!petWindow.isVisible()&&(info.loaded||!info.ok)){home();petWindow.showInactive();}if(process.argv.includes('--diagnostics')||verifyMode)fs.writeFileSync(path.join(root,engineCheck?'tests/live2d-engine.json':showcaseCheck?'tests/live2d-showcase.json':animationCheck?'tests/live2d-animation.json':'tests/live2d-runtime.json'),JSON.stringify(info,null,2));sendState();if(multiviewCheck&&info.loaded&&!multiviewStarted){multiviewStarted=true;validateMultiview();}if(verifyMode&&!multiviewCheck&&(!info.ok||info.seconds))app.exit(info.ok&&info.vertexMotionVerified&&info.render?.visiblePixels>5000?0:1);});
  ipcMain.handle('gpt:config',e=>senderAllowed(e)?rpc({op:'config'}):null);
  ipcMain.handle('gpt:save',(e,value)=>senderAllowed(e)&&typeof value.key==='string'&&value.key.length<1000&&typeof value.model==='string'&&value.model.length<200?rpc({op:'save',...value}):null);
  ipcMain.handle('gpt:clear-key',e=>senderAllowed(e)?rpc({op:'clear-key'}):null);
@@ -146,6 +155,26 @@ async function start(){
  });
  ipcMain.handle('gpt:cancel',e=>{if(senderAllowed(e)&&pending){pending.kill();pending=null;act('idle',500);}});
  timer=setInterval(tick,16);if(verifyMode)setTimeout(()=>app.exit(2),showcaseCheck?58000:25000);if(process.argv.includes('--chat'))showChat();
+}
+async function validateDragon(model){
+ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const until=async test=>{
+  const deadline=Date.now()+8500;
+  while(!test()){if(Date.now()>=deadline)throw Error('Timed out waiting for '+mode);await wait(50);}
+ };
+ const report={ok:false,model};
+ try{
+  walking=autoGestures=false;
+  act('sleep',3600000);
+  await until(()=>!postureStanding);
+  await wait(4400);
+  act('wave',3500);
+  report.queued=mode==='wake'&&queuedAction?.value==='wave';
+  await until(()=>mode==='wave'&&postureStanding);
+  report.ok=report.queued&&model.engine==='Three.js'&&model.joints>0;
+ }catch(error){report.error=error.message;}
+ fs.writeFileSync(path.join(root,'tests/live2d-dragon.json'),JSON.stringify(report,null,2));
+ app.exit(report.ok?0:1);
 }
 async function validateMultiview(){
  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),checks=[];
@@ -160,7 +189,7 @@ async function validateMultiview(){
 }
 function tick(){
  if(!petWindow||petWindow.isDestroyed()||!placed)return;
- if(verifyMode&&!placementCheck&&!multiviewCheck)return;
+ if(verifyMode&&!placementCheck&&!multiviewCheck&&!dragonCheck)return;
  const now=Date.now(),dt=Math.min(.1,(now-last)/1000);last=now;
  const p=screen.getCursorScreenPoint(),b=petWindow.getBounds();
  if(drag){const nx=drag.windowX+p.x-drag.x,ny=drag.windowY+p.y-drag.y;drag.moved=Math.max(drag.moved,Math.abs(p.x-drag.x)+Math.abs(p.y-drag.y));movePet(nx,ny);x=nx;y=ny;return;}
