@@ -1,0 +1,13 @@
+{
+  "tool": "StretchyStudio",
+  "revision": "24a83a27ba43e43e9d2e3de5e33994594e6199c2",
+  "license": "MIT",
+  "model": "GPTDragon",
+  "meshes": 33,
+  "generatedBy": "build-project.mjs",
+  "status": "Official Cubism 5.3 PRO export; 36 parameters including native knee-flex warp keyforms; independent mesh bindings, 12 rendered animation states, joint springs and 150% DPI placement verified",
+  "finalProject": "GPTDragon.natural.cmo3",
+  "officialExport": "GPTDragon.natural.moc3",
+  "rigUpdate": "add-knee-rig.py preserves the official atlas and neutral pose; regenerated runtime moc3 via official Editor",
+  "motionController": "runtime/motions.js: quintic key poses and individual joint springs"
+}

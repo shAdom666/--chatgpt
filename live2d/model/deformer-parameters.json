@@ -1,0 +1,57 @@
+{
+  "leftElbow": {
+    "paramId": "ParamRotation_leftElbow",
+    "min": -90,
+    "max": 90
+  },
+  "rightElbow": {
+    "paramId": "ParamRotation_rightElbow",
+    "min": -90,
+    "max": 90
+  },
+  "body": {
+    "paramId": "ParamRotation_body",
+    "min": -30,
+    "max": 30
+  },
+  "head": {
+    "paramId": "ParamRotation_head",
+    "min": -30,
+    "max": 30
+  },
+  "armLeft": {
+    "paramId": "ParamRotation_armLeft",
+    "min": -30,
+    "max": 30
+  },
+  "armRight": {
+    "paramId": "ParamRotation_armRight",
+    "min": -30,
+    "max": 30
+  },
+  "legLeft": {
+    "paramId": "ParamRotation_legLeft",
+    "min": -30,
+    "max": 30
+  },
+  "legRight": {
+    "paramId": "ParamRotation_legRight",
+    "min": -30,
+    "max": 30
+  },
+  "wingLeft": {
+    "paramId": "ParamRotation_wingLeft",
+    "min": -30,
+    "max": 30
+  },
+  "wingRight": {
+    "paramId": "ParamRotation_wingRight",
+    "min": -30,
+    "max": 30
+  },
+  "tail": {
+    "paramId": "ParamRotation_tail",
+    "min": -30,
+    "max": 30
+  }
+}

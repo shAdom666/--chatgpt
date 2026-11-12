@@ -1,0 +1,11 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "GPTDragon.natural.moc3",
+		"Textures": [
+			"GPTDragon.natural.4096/texture_00.png"
+		],
+		"Physics": "GPTDragon.natural.physics3.json",
+		"DisplayInfo": "GPTDragon.natural.cdi3.json"
+	}
+}

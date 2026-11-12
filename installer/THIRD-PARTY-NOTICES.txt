@@ -1,0 +1,16 @@
+龙娘桌宠 Live2D — 第三方组件说明
+
+Electron / Chromium: MIT 及 Chromium 第三方许可，见
+live2d/runtime/node_modules/electron/dist/LICENSE
+live2d/runtime/node_modules/electron/dist/LICENSES.chromium.html
+
+PixiJS 6.5.10: MIT，见 licenses/PixiJS-LICENSE.txt。
+Pixi Live2D Display 0.4.0: MIT，见 licenses/Pixi-Live2D-Display-LICENSE.txt。
+Live2D Cubism Core 5.1: Copyright Live2D Inc.，遵循 Live2D 专有软件许可。
+Core 源文件保留原版权与许可链接，完整许可副本见 licenses/Live2D-proprietary-software-license.html。
+https://www.live2d.com/eula/live2d-proprietary-software-license-agreement_en.html
+
+可编辑工程生成参考 StretchyStudio (MIT)，作者 MangoLion 及贡献者，见 licenses/StretchyStudio-LICENSE.txt。
+本运行包不附带 Cubism 编辑器、SDK 开发工具、分层 PSD 或编辑工程。
+角色依据用户提供的参考图制作，原有素材署名保留在 assets/NOTICE.md。
+本项目与 OpenAI、Live2D 或其他上述组件作者无官方关联。

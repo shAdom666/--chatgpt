@@ -1,0 +1,48 @@
+本次修复（2026-11-11）
+
+1. 桌面定位与尺寸
+在本机 150% 显示缩放下复现了 setPosition/getBounds 往返累积放大问题。
+移动统一改成固定逻辑宽高的 setBounds；避免将舍入后的窗口尺寸再次用于移动。
+实际原生窗口连续移动 240 次后，尺寸仍为约 320×470 DIP（允许 1 DIP 的原生取整差异）。
+默认启动在右下角；自由走动沿底边进行；拖动松手后平滑落到底边。
+右键关闭「贴住屏幕底边」可在任意位置摆放。
+补上 pointercancel、lostpointercapture 和窗口失焦的拖动取消处理。
+
+2. 全身绑定与动作
+原模型的腿、翅膀、尾巴旋转变形器没有子网格，所以这些参数变化不产生形变。
+重接了 11 个部件变形器，保留原纹理图集与中立姿势。
+衣裙跟随身体旋转，角与发饰跟随头部；左右腿、左右翼和尾巴的参数各自带动对应网格。
+肘部物理以 100% 输出覆盖招手姿势的问题，改为在物理计算后叠加动作分量。
+增加可见的身体、步态、翅膀和尾巴动态；菜单打开时停止原地迈步。
+
+上一轮全身绑定工程：model/GPTDragon.fullbody.cmo3
+运行入口：model/GPTDragon.model3.json
+正式导出：model/GPTDragon.fullbody.moc3 与同名物理和纹理文件
+视频预览：preview/actions.webm（由真实 Cubism 模型的画布直接录制，无付费 API 调用）
+
+回归检查：
+node tests/live2d-walk.cjs
+powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode placement
+powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode rig
+powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode animation
+node tests/live2d-fullbody.cjs
+
+逐部位检查要求腿、翼、尾巴、衣裙与头饰确实产生网格位移；同时验证物理之后的实际肘部参数。
+中立姿势相对上一版最大边界误差小于 0.001 个原图像素。
+五种状态均验证实际可见像素，并检查渲染画布没有因移动而放大。
+
+源工程修复脚本：tools/repair-fullbody.py；结果仍必须在官方 Cubism Editor 中打开并导出。
+编辑器曾因多工程占用内存而退出；之后用单工程完成了官方导出。未修改系统内存/安全设置。
+
+3. 自然动作迭代
+新增左右膝盖原生变形参数和 4×9 Warp 关键形，在官方 Cubism PRO 中打开并重新导出。
+走路跟随实际移动距离，区分支撑脚与摆动脚，加入屈膝、抬脚、反向摆臂和轻微重心变化。
+动作改为五次曲线关键姿势与逐关节弹簧；肩肘、头部、翅膀、尾巴错开启动和回落。
+招手、开心、小跳、睡觉重新安排准备和收势；新增伸懒腰、左右张望、点头、摊手、整理裙摆、慢慢醒来。
+闲置随机小动作可开关，避免连续重复同一个动作；托盘菜单实时刷新开关状态。
+当前最终工程：model/GPTDragon.natural.cmo3；运行入口仍为 model/GPTDragon.model3.json。
+当前正式导出：model/GPTDragon.natural.moc3 与同名物理和纹理文件。
+新预览：preview/natural-actions.webm（约 46 秒、12 状态、实际 Cubism 画布录制）。
+新增检查：node tests/natural-motion.cjs；check-runtime.ps1 -Mode showcase；node tests/natural-showcase.cjs。
+实际检查确认 36 参数、左右膝盖分别带动对应腿网格、12 状态可见、动作未被肘部物理覆盖、画布尺寸稳定。
+工具 start-cubism.ps1 仅限制本次编辑器进程的 Java 堆为 2 GB；导出成功，未修改全局系统设置。

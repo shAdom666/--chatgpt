@@ -1,0 +1,283 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "ParamGroupFace",
+			"Name": "Angle X"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "ParamGroupFace",
+			"Name": "Angle Y"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "ParamGroupFace",
+			"Name": "Angle Z"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "ParamGroupEyes",
+			"Name": "Eye L Open"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "ParamGroupEyes",
+			"Name": "Eye R Open"
+		},
+		{
+			"Id": "ParamEyeBallX",
+			"GroupId": "ParamGroupEyeballs",
+			"Name": "Eyeball X"
+		},
+		{
+			"Id": "ParamEyeBallY",
+			"GroupId": "ParamGroupEyeballs",
+			"Name": "Eyeball Y"
+		},
+		{
+			"Id": "ParamBrowLY",
+			"GroupId": "ParamGroupBrows",
+			"Name": "Brow L Y"
+		},
+		{
+			"Id": "ParamBrowRY",
+			"GroupId": "ParamGroupBrows",
+			"Name": "Brow R Y"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "ParamGroupMouth",
+			"Name": "Mouth Form"
+		},
+		{
+			"Id": "ParamMouthOpenY",
+			"GroupId": "ParamGroupMouth",
+			"Name": "Mouth Open"
+		},
+		{
+			"Id": "ParamBodyAngleX",
+			"GroupId": "ParamGroupBody",
+			"Name": "Body Angle X"
+		},
+		{
+			"Id": "ParamBodyAngleY",
+			"GroupId": "ParamGroupBody",
+			"Name": "Body Angle Y"
+		},
+		{
+			"Id": "ParamBodyAngleZ",
+			"GroupId": "ParamGroupBody",
+			"Name": "Body Angle Z"
+		},
+		{
+			"Id": "ParamBreath",
+			"GroupId": "ParamGroupBody",
+			"Name": "Breath"
+		},
+		{
+			"Id": "ParamHairFront",
+			"GroupId": "ParamGroupHair",
+			"Name": "Hair Front"
+		},
+		{
+			"Id": "ParamHairSide",
+			"GroupId": "ParamGroupHair",
+			"Name": "Hair Side"
+		},
+		{
+			"Id": "ParamHairBack",
+			"GroupId": "ParamGroupHair",
+			"Name": "Hair Back"
+		},
+		{
+			"Id": "ParamSkirt",
+			"GroupId": "ParamGroupClothing",
+			"Name": "Skirt"
+		},
+		{
+			"Id": "ParamShirt",
+			"GroupId": "ParamGroupClothing",
+			"Name": "Shirt"
+		},
+		{
+			"Id": "ParamPants",
+			"GroupId": "ParamGroupClothing",
+			"Name": "Pants"
+		},
+		{
+			"Id": "ParamBust",
+			"GroupId": "ParamGroupClothing",
+			"Name": "Bust"
+		},
+		{
+			"Id": "ParamRotation_leftElbow",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation leftElbow"
+		},
+		{
+			"Id": "ParamRotation_rightElbow",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation rightElbow"
+		},
+		{
+			"Id": "ParamRotation_body",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation body"
+		},
+		{
+			"Id": "ParamRotation_head",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation head"
+		},
+		{
+			"Id": "ParamRotation_armLeft",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation armLeft"
+		},
+		{
+			"Id": "ParamRotation_armRight",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation armRight"
+		},
+		{
+			"Id": "ParamRotation_legLeft",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation legLeft"
+		},
+		{
+			"Id": "ParamRotation_legRight",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation legRight"
+		},
+		{
+			"Id": "ParamRotation_wingLeft",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation wingLeft"
+		},
+		{
+			"Id": "ParamRotation_wingRight",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation wingRight"
+		},
+		{
+			"Id": "ParamRotation_tail",
+			"GroupId": "ParamGroupBone",
+			"Name": "Rotation tail"
+		},
+		{
+			"Id": "ParamOpacity",
+			"GroupId": "ParamGroupCustom",
+			"Name": "Opacity"
+		},
+		{
+			"Id": "ParamKneeL",
+			"GroupId": "",
+			"Name": "Knee Left Flex"
+		},
+		{
+			"Id": "ParamKneeR",
+			"GroupId": "",
+			"Name": "Knee Right Flex"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroupFace",
+			"GroupId": "",
+			"Name": "Face"
+		},
+		{
+			"Id": "ParamGroupEyes",
+			"GroupId": "",
+			"Name": "Eye"
+		},
+		{
+			"Id": "ParamGroupEyeballs",
+			"GroupId": "",
+			"Name": "Eyeball"
+		},
+		{
+			"Id": "ParamGroupBrows",
+			"GroupId": "",
+			"Name": "Brow"
+		},
+		{
+			"Id": "ParamGroupMouth",
+			"GroupId": "",
+			"Name": "Mouth"
+		},
+		{
+			"Id": "ParamGroupBody",
+			"GroupId": "",
+			"Name": "Body"
+		},
+		{
+			"Id": "ParamGroupHair",
+			"GroupId": "",
+			"Name": "Hair"
+		},
+		{
+			"Id": "ParamGroupClothing",
+			"GroupId": "",
+			"Name": "Clothing"
+		},
+		{
+			"Id": "ParamGroupBone",
+			"GroupId": "",
+			"Name": "Bone"
+		},
+		{
+			"Id": "ParamGroupCustom",
+			"GroupId": "",
+			"Name": "Custom"
+		}
+	],
+	"Parts": [
+		{
+			"Id": "Part_body",
+			"Name": "body"
+		},
+		{
+			"Id": "Part_legLeft",
+			"Name": "legLeft"
+		},
+		{
+			"Id": "Part_legRight",
+			"Name": "legRight"
+		},
+		{
+			"Id": "Part_head",
+			"Name": "head"
+		},
+		{
+			"Id": "Part_armLeft",
+			"Name": "armLeft"
+		},
+		{
+			"Id": "Part_armRight",
+			"Name": "armRight"
+		},
+		{
+			"Id": "Part_wingLeft",
+			"Name": "wingLeft"
+		},
+		{
+			"Id": "Part_wingRight",
+			"Name": "wingRight"
+		},
+		{
+			"Id": "Part_tail",
+			"Name": "tail"
+		},
+		{
+			"Id": "Part_leftElbow",
+			"Name": "leftElbow"
+		},
+		{
+			"Id": "Part_rightElbow",
+			"Name": "rightElbow"
+		}
+	]
+}

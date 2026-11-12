@@ -1,0 +1,26 @@
+{
+  "character": "chatgpt-chibi",
+  "sourceCell": [
+    192,
+    208
+  ],
+  "renderCell": [
+    384,
+    416
+  ],
+  "sourceFps": 8,
+  "fps": 24,
+  "counts": [
+    18,
+    24,
+    24,
+    12,
+    15,
+    24,
+    18,
+    18,
+    18
+  ],
+  "method": "bidirectional Farneback optical flow; premultiplied-alpha Lanczos4 2x resampling",
+  "attribution": "ZipZipPipe; savanna0425/llm-pet; noncommercial"
+}

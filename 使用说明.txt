@@ -1,0 +1,58 @@
+ChatGPT 娘 · Live2D 桌宠
+
+启动
+双击 GPTPet.exe，或桌面上的「ChatGPT 娘 Live2D」快捷方式。
+请保留整个项目目录：程序需要 GptBridge.exe、assets 和 live2d/runtime、live2d/model。
+运行所需依赖已经准备好；日常使用不需要打开 Cubism。
+
+形象与动画
+按你提供的白紫色龙娘形象重绘并拆成 33 个图层，建模画布为 1024×1536。
+使用官方 Cubism Editor 5.3 PRO 导出的真实 moc3、4096×4096 纹理图集及 physics3.json。
+模型包含 36 个参数、头脸与眼睛变形、嘴型、身体呼吸、四肢关节、左右膝盖屈伸、翅膀和尾巴。
+六组物理规则驱动头发与衣裙等部件。动作连续更新，实际帧率取决于设备和显示器。
+本版动作由桌宠运行程序连续驱动 Cubism 参数，没有使用六张姿态图片来回切换。
+走动保留连续小数坐标，再将结果输出到窗口；只在真实屏幕边界换方向。
+步态跟随真实行走距离，摆腿时屈膝、手臂反向摆动；停下后平滑收势。
+肩、肘、头部与尾巴分别缓动，动作含准备、停留和回落阶段。
+
+操作
+单击角色：打开聊天。
+按住角色拖动：移动位置，默认松手后平滑落到屏幕底边。
+右键关闭「贴住屏幕底边」后，可自由摆放。
+右键：招手、开心、轻轻跳一下、睡觉、慢慢醒来、自由走动、置顶、大小、回到右下角、退出。
+「日常动作」子菜单：伸懒腰、左右张望、点点头、摊手歪头、整理裙摆。
+默认开启「日常小动作」，空闲时随机做动作；不连续重复同一个动作，可以在菜单关闭。
+支持 240、320、400 三种窗口宽度；默认 320。
+右下角托盘图标也能打开菜单，双击图标可以聊天。
+关闭聊天窗口后桌宠继续运行。右键选「退出」才完全退出。
+本版没有设置开机自启。
+
+连接 GPT
+打开聊天窗口，点击「连接设置」，在本机填写 OpenAI API Key 和你有权限使用的模型名称。
+默认模型名称沿用现有配置；可以修改。不要把密钥发到聊天中。
+保存只保存设置，首次发送消息时才连接 OpenAI API 并验证权限。
+Enter 发送，Shift+Enter 换行；回复期间点击「停止」可取消等待。
+本轮动作更新没有进行真实付费 API 对话测试。
+API 用量由你的 OpenAI API 账户计费。
+
+数据
+密钥使用 Windows DPAPI 在本机加密，设置位于 %LOCALAPPDATA%\GPTDesktopPet\settings.json。
+没有本地密钥时，也支持读取进程环境变量 OPENAI_API_KEY。
+每次发送会把最近十轮文字对话发送到 https://api.openai.com/v1/responses，并设置 store=false。
+聊天记录只在本次窗口的内存中保存；新对话或关闭窗口会清空。
+程序不读取屏幕、文件、摄像头或麦克风，也不执行聊天回复中的命令。
+
+编辑与检查
+最终可编辑工程：live2d/model/GPTDragon.natural.cmo3。
+分层 PSD：live2d/source/GPTDragon.layers.psd。
+运行模型入口：live2d/model/GPTDragon.model3.json。
+动作预览：live2d/preview/natural-actions.webm，约 46 秒、12 种状态；同目录 PNG 均由实际 Cubism 模型渲染导出。
+构建、模型验证与制作记录详见 live2d/制作进度.txt、动画实现说明.txt。
+原先的 WPF 动画实现保留用于开发对照，仅 --legacy 参数会启动它。
+
+素材与依赖
+形象依据用户提供的参考图制作；补画提示词保存在 live2d/source/imagegen-prompts.json。
+原有素材的作者署名、非商业使用约定见 assets/NOTICE.md。
+Cubism 工程生成参考 StretchyStudio（MIT），许可保留于 live2d/model/StretchyStudio-LICENSE.txt。
+Cubism Core、PixiJS、Pixi Live2D Display、Electron 均保留各自许可。
+程序为个人同人项目，与 OpenAI 无官方关联。

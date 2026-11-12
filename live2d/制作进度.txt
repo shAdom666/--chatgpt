@@ -1,0 +1,49 @@
+状态：已完成全身自然动作迭代、原生膝盖变形和官方 Live2D 模型重新导出。
+
+交付文件
+model/GPTDragon.natural.cmo3：最终可编辑工程，包含闭嘴关键形、左右膝盖屈伸及 4096 图集；已在官方 Cubism PRO 打开并导出。
+source/GPTDragon.layers.psd：33 个对齐图层，1024×1536，回读验证有效。
+model/GPTDragon.model3.json：桌宠运行入口，注册自动眨眼与口型参数组。
+model/GPTDragon.natural.moc3、GPTDragon.natural.physics3.json、GPTDragon.natural.cdi3.json、GPTDragon.natural.4096/texture_00.png：由官方 Cubism Editor 5.3 导出的最终运行模型。
+model/GPTDragon.fullbody.cmo3、GPTDragon.cmo3 及早期导出保留制作过程版本，最终工程请使用 natural 文件。
+preview/natural-actions.webm：约 46 秒的 12 状态实际运行预览；同目录包含每种动作的 PNG。
+
+验证
+自定义模型：33 个网格、36 个参数、6 组物理规则。
+纹理图集：4096×4096，按原生 100% 比例排列并留间距。
+12 种状态的真实绘制、膝盖网格变形、四肢参数、自动眨眼、物理输出均已验证；本机 46.28 秒实际渲染 2756 帧（离屏验证设定 60 FPS）。
+动作曲线覆盖 30/60/120/144/240 Hz，验证支撑脚、关节范围、中断过渡和回到待机；旧五状态回归也通过。
+透明桌面显示、右键菜单、启动入口已实际检查。
+移动模块单独验证 30/60/120/144/240 Hz 的起步、停止、边界换向及狭窄屏幕。
+GPT 连接组件通过 13 项本地检查，包括 DPAPI、请求格式、历史限制和取消；未配置密钥，未进行真实 API 调用。
+验证数据见 tests/live2d-animation.json、tests/live2d-showcase.json、tests/live2d-rig.json；这些为本机生成报告。
+
+复现
+python tools/prepare_live2d_layers.py
+node live2d/tools/build-project.mjs
+注意：以上两步用于从源图重建，会覆盖自动生成工程；不会保留编辑器内手工图集改动。
+已有工程只重建 PSD：node live2d/tools/build-project.mjs --psd-only。
+闭嘴关键形补正：python live2d/tools/refine-mouth.py，保留现有图集，结果仍需在官方 Cubism 中打开并导出。
+官方导出选择 SDK 3.0/Cubism3.0(3.2)、纹理 1/1（4096 px），并导出物理设置。
+膝盖工程生成：python live2d/tools/add-knee-rig.py，以已有 fullbody 工程为输入，输出 natural 工程。
+默认最终导出名为 GPTDragon.natural.moc3；之后执行：
+node live2d/tools/finalize-model.mjs
+node live2d/tools/validate-model.mjs
+node tests/live2d-walk.cjs
+node tests/natural-motion.cjs
+powershell -NoProfile -File live2d/tools/check-runtime.ps1 -Mode showcase
+node tests/natural-showcase.cjs
+powershell -NoProfile -File build-live2d.ps1
+powershell -NoProfile -File build.ps1
+运行 Electron 时需清除 ELECTRON_RUN_AS_NODE；正式 GPTPet.exe 与启动脚本已处理。
+--model-check 验证模型加载与真实顶点、像素；--animation-check 依次验证五种动作并生成 preview PNG。
+--showcase-check 验证 12 种动作并录制 natural-actions.webm。编辑器可通过 tools/start-cubism.ps1 使用 2 GB Java 堆启动，避免默认按整机内存分配堆而导致导出失败。
+--diagnostics 写本地诊断数据；没有开启 Node 调试端口。
+
+来源
+参考图由用户提供；补画由内置 imagegen 生成，完整提示词见 source/imagegen-prompts.json。
+StretchyStudio： https://github.com/MangoLion/stretchystudio
+版本：24a83a27ba43e43e9d2e3de5e33994594e6199c2，MIT。
+Cubism Core：Live2D 官方 SDK CDN，采用官方专有软件许可：
+https://www.live2d.com/eula/live2d-proprietary-software-license-agreement_en.html
+其余依赖保留包内许可；当前是本机个人开发版本，未做商业发布。

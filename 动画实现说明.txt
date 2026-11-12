@@ -1,0 +1,31 @@
+当前入口 GPTPet.exe 启动 live2d/runtime 的 Electron 程序。
+角色通过 Pixi Live2D Display + 官方 Live2D Cubism Core 加载真实 moc3。
+每帧驱动模型参数、更新模型物理与网格，然后由 WebGL 绘制。
+转头、眼球跟随、呼吸、头发衣裙、四肢、翅膀和尾巴使用模型内的变形器与关键形。
+motions.js 用五次曲线组织准备、动作和收势，关节使用各自的临界阻尼弹簧保留中断时的姿势与速度。
+步态由实际移动距离驱动，支撑阶段约占 62%；摆动腿通过原生膝盖变形器抬脚，手臂反向摆动。
+肩、肘、翅膀和尾巴错开响应时间，避免全身同时摆动。睡觉与醒来逐渐闭眼、睁眼。
+纯动作验证覆盖 30/60/120/144/240 Hz。
+运行程序驱动动作参数；本包尚未将这些动作另存为独立 motion3 文件。
+
+walker.cjs 使用连续坐标与临界阻尼速度，原生窗口位置仅作整数输出。
+不会把整数舍入后的小位移误判为碰壁；真实边界才会换方向。
+右键菜单打开时暂停窗口移动，减少菜单与角色位置脱离。
+
+模型：live2d/model/GPTDragon.model3.json。
+最终工程：live2d/model/GPTDragon.natural.cmo3。
+新增 ParamKneeL、ParamKneeR 是工程内的 4×9 原生 Warp 网格关键形，使用官方编辑器重新导出；没有在运行时改写顶点。
+分层源文件：live2d/source/GPTDragon.layers.psd。
+生成与检查脚本：live2d/tools/、tests/live2d-walk.cjs、tests/natural-motion.cjs、tests/natural-showcase.cjs。
+12 状态实际渲染视频：live2d/preview/natural-actions.webm。
+
+原 src/DragonSurface.cs、dragon.hlsl、assets/dragon-v3 是上一版贴图动画的开发对照。
+仅 GPTPet.exe --legacy 使用该旧实现；正常启动使用真正的 Cubism 模型。
+
+参考开源项目及相关许可继续保留：
+https://github.com/MangoLion/stretchystudio （工程生成，MIT）
+https://github.com/guansss/pixi-live2d-display （运行模型）
+https://github.com/Live2D/CubismWebSamples （官方引擎验证示例，未作为用户角色替换交付）
+https://github.com/BAndysc/Avalonia.DesktopPet （早期桌宠结构参考）
+https://github.com/BaiZhiShan/desktop-pet （早期透明窗口及交互参考）
+https://github.com/LorisYounger/VPet （开源桌宠行为参考）
